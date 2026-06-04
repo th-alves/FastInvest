@@ -786,6 +786,28 @@ function deleteAporteMonth(key) {
 }
 
 // ============================================================
+// MENU MOBILE
+// ============================================================
+function toggleMenu() {
+    const hamburger = document.getElementById('menuHamburger');
+    const dropdown = document.getElementById('menuDropdown');
+    
+    hamburger.classList.toggle('active');
+    dropdown.classList.toggle('open');
+}
+
+// Fechar o menu ao clicar fora
+document.addEventListener('click', function(event) {
+    const hamburger = document.getElementById('menuHamburger');
+    const dropdown = document.getElementById('menuDropdown');
+    
+    if (!hamburger.contains(event.target) && !dropdown.contains(event.target)) {
+        hamburger.classList.remove('active');
+        dropdown.classList.remove('open');
+    }
+});
+
+// ============================================================
 // IMPORT / EXPORT
 // ============================================================
 function exportData() {

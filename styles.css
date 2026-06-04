@@ -1477,6 +1477,7 @@ ul, ol { list-style: none; }
     gap: var(--space-md);
     height: auto;
     max-width: none;
+    position: relative;
   }
 
   .header-logo { 
@@ -1544,47 +1545,112 @@ ul, ol { list-style: none; }
     background: rgba(255, 107, 0, 0.08);
   }
 
-  /* ── Action Bar Mobile ──────────────────────────────────── */
-  .header-action-bar {
+  /* ── Menu Hamburguer Mobile ──────────────────────────────── */
+  .menu-hamburger {
     display: flex;
-    gap: var(--space-sm);
-    padding: 0;
-    border: none;
-    background: transparent;
-    flex-direction: row;
-    flex-shrink: 0;
-  }
-
-  .btn-action-icon {
-    display: inline-flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    padding: 0;
+    width: 40px;
+    height: 40px;
     background: transparent;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    color: var(--text-secondary);
-    font-size: 0;
-    transition: all var(--duration-base) var(--ease-out));
+    cursor: pointer;
+    gap: 5px;
+    padding: 0;
+    transition: all var(--duration-base) var(--ease-out);
+    flex-shrink: 0;
   }
 
-  .btn-action-icon span {
-    display: none;
-  }
-
-  .btn-action-icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .btn-action-icon:hover {
-    background: rgba(255, 107, 0, 0.12);
+  .menu-hamburger:hover {
     border-color: var(--primary);
+    background: rgba(255, 107, 0, 0.08);
+  }
+
+  .menu-hamburger.active {
+    border-color: var(--primary);
+    background: rgba(255, 107, 0, 0.12);
+  }
+
+  .hamburger-line {
+    width: 18px;
+    height: 2px;
+    background: var(--text-secondary);
+    border-radius: 1px;
+    transition: all var(--duration-base) var(--ease-out);
+    transform-origin: center;
+  }
+
+  .menu-hamburger.active .hamburger-line-1 {
+    transform: rotate(45deg) translateY(8px);
+  }
+
+  .menu-hamburger.active .hamburger-line-2 {
+    opacity: 0;
+  }
+
+  .menu-hamburger.active .hamburger-line-3 {
+    transform: rotate(-45deg) translateY(-8px);
+  }
+
+  /* ── Dropdown Menu ──────────────────────────────────────── */
+  .menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--space-sm);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    min-width: 200px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transition: all var(--duration-base) var(--ease-out);
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+  }
+
+  .menu-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    transition: all var(--duration-base) var(--ease-out);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .menu-item:hover {
+    background: rgba(255, 107, 0, 0.1);
     color: var(--primary);
-    transform: none;
-    box-shadow: none;
+    padding-left: calc(var(--space-lg) + var(--space-sm));
+  }
+
+  .menu-item svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: currentColor;
+  }
+
+  .menu-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   .dashboard-main { padding: var(--space-md) var(--space-md) var(--space-2xl); }
