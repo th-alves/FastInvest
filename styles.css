@@ -1466,34 +1466,43 @@ ul, ol { list-style: none; }
   .dashboard-header { 
     padding: 0 var(--space-md);
     height: auto;
-    flex-direction: column;
-    gap: 0;
+    flex-direction: row;
+    gap: var(--space-md);
+    align-items: center;
   }
 
   .header-inner {
     width: 100%;
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--space-md);
     height: auto;
+    max-width: none;
   }
 
   .header-logo { 
     justify-content: flex-start;
-    width: 100%;
+    flex-shrink: 0;
+    gap: var(--space-sm);
+  }
+
+  .header-logo svg {
+    width: 24px;
+    height: 24px;
   }
 
   .header-logo span.header-title { 
     display: inline;
     font-size: var(--font-md);
+    font-weight: 700;
   }
 
   /* ── Navbar Mobile ──────────────────────────────────────── */
   .tab-nav {
-    width: 100%;
+    flex: 1;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    gap: var(--space-md);
-    padding: var(--space-md) 0;
+    gap: var(--space-sm);
+    padding: var(--space-sm) 0;
     background: transparent;
     border: none;
     justify-content: flex-start;
@@ -1506,19 +1515,22 @@ ul, ol { list-style: none; }
   .tab-indicator { display: none; }
 
   .tab-btn {
-    padding: var(--space-sm) var(--space-md);
-    font-size: var(--font-sm);
-    gap: var(--space-sm);
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    gap: 4px;
     white-space: nowrap;
     flex-shrink: 0;
     background: transparent;
     border: 1px solid var(--border-subtle);
     position: relative;
+    border-radius: var(--radius-md);
+    letter-spacing: 0.02em;
+    font-weight: 500;
   }
 
   .tab-btn svg {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
   }
 
   .tab-btn.active {
@@ -1529,6 +1541,50 @@ ul, ol { list-style: none; }
 
   .tab-btn:hover {
     border-color: var(--primary);
+    background: rgba(255, 107, 0, 0.08);
+  }
+
+  /* ── Action Bar Mobile ──────────────────────────────────── */
+  .header-action-bar {
+    display: flex;
+    gap: var(--space-sm);
+    padding: 0;
+    border: none;
+    background: transparent;
+    flex-direction: row;
+    flex-shrink: 0;
+  }
+
+  .btn-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0;
+    transition: all var(--duration-base) var(--ease-out));
+  }
+
+  .btn-action-icon span {
+    display: none;
+  }
+
+  .btn-action-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .btn-action-icon:hover {
+    background: rgba(255, 107, 0, 0.12);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: none;
+    box-shadow: none;
   }
 
   .dashboard-main { padding: var(--space-md) var(--space-md) var(--space-2xl); }
@@ -1625,15 +1681,25 @@ ul, ol { list-style: none; }
   .tab-nav { border-radius: var(--radius-sm); }
 
   .tab-btn {
-    font-size: var(--font-sm);
-    padding: var(--space-sm) var(--space-md);
+    font-size: 0.75rem;
+    padding: 6px 12px;
   }
 
   .month-selector { width: 100%; justify-content: space-between; }
 
-  /* Botões de ação ocultos em telas muito pequenas */
+  /* Botões de ação minimalistas em telas muito pequenas */
   .header-action-bar {
-    display: none;
+    gap: var(--space-xs);
+  }
+
+  .btn-action-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .btn-action-icon svg {
+    width: 14px;
+    height: 14px;
   }
 }
 
