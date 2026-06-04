@@ -517,6 +517,15 @@ ul, ol { list-style: none; }
   height: 32px;
 }
 
+/* ── Menu Mobile (oculto em desktop) ──────────────────────── */
+.menu-hamburger {
+  display: none;
+}
+
+.menu-dropdown {
+  display: none;
+}
+
 /* ── Dashboard ───────────────────────────────────────────── */
 .dashboard {
   display: none;
@@ -1553,19 +1562,19 @@ ul, ol { list-style: none; }
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: transparent;
+    background: var(--bg-card-alpha);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
     cursor: pointer;
-    gap: 5px;
     padding: 0;
     transition: all var(--duration-base) var(--ease-out);
     flex-shrink: 0;
+    gap: 0;
   }
 
   .menu-hamburger:hover {
     border-color: var(--primary);
-    background: rgba(255, 107, 0, 0.08);
+    background: rgba(255, 107, 0, 0.12);
   }
 
   .menu-hamburger.active {
@@ -1578,12 +1587,12 @@ ul, ol { list-style: none; }
     height: 2px;
     background: var(--text-secondary);
     border-radius: 1px;
-    transition: all var(--duration-base) var(--ease-out);
-    transform-origin: center;
+    transition: all 0.3s var(--ease-out);
+    margin: 3px 0;
   }
 
   .menu-hamburger.active .hamburger-line-1 {
-    transform: rotate(45deg) translateY(8px);
+    transform: rotate(45deg) translate(7px, 7px);
   }
 
   .menu-hamburger.active .hamburger-line-2 {
@@ -1591,11 +1600,12 @@ ul, ol { list-style: none; }
   }
 
   .menu-hamburger.active .hamburger-line-3 {
-    transform: rotate(-45deg) translateY(-8px);
+    transform: rotate(-45deg) translate(7px, -7px);
   }
 
   /* ── Dropdown Menu ──────────────────────────────────────── */
   .menu-dropdown {
+    display: block;
     position: absolute;
     top: 100%;
     right: 0;
