@@ -1542,25 +1542,31 @@ ul, ol { list-style: none; }
 
   /* Header Action Bar mobile */
   .header-action-bar {
-    gap: var(--space-xs);
-    padding: 10px var(--space-md);
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    flex-direction: column;
   }
 
   .btn-action-icon {
     flex: 1;
+    width: 100%;
     justify-content: center;
-    padding: 10px 12px;
-    font-size: 0.8rem;
-    gap: 6px;
+    padding: 16px 20px;
+    font-size: 1rem;
+    gap: 12px;
+    min-height: 48px;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, rgba(255,107,0,0.08) 0%, rgba(255,107,0,0.03) 100%);
   }
 
   .btn-action-icon span {
-    display: none; /* Esconde o texto no mobile para economizar espaço */
+    display: block; /* Mostra o texto no mobile */
+    font-weight: 600;
   }
 
   .btn-action-icon svg {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -1595,6 +1601,23 @@ ul, ol { list-style: none; }
   }
 
   .month-selector { width: 100%; justify-content: space-between; }
+
+  /* Botões de ação em telas muito pequenas */
+  .header-action-bar {
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .btn-action-icon {
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    min-height: 44px;
+  }
+
+  .btn-action-icon svg {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 /* ── Print ───────────────────────────────────────────────── */
