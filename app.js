@@ -860,7 +860,21 @@ function exportData() {
 }
 
 function importData() {
-    document.getElementById('importFileInput').click();
+    // Fechar ambos os menus antes de acionar o file input
+    // O setTimeout garante que o menu feche primeiro e o browser
+    // trate o .click() como evento direto de usuário (necessário em mobile)
+    closeMenu();
+    closeImportExportMenu();
+    setTimeout(() => {
+        document.getElementById('importFileInput').click();
+    }, 150);
+}
+
+function closeMenu() {
+    const hamburger = document.getElementById('menuHamburger');
+    const dropdown = document.getElementById('menuDropdown');
+    if (hamburger) hamburger.classList.remove('active');
+    if (dropdown) dropdown.classList.remove('open');
 }
 
 function handleImportFile(event) {
