@@ -584,9 +584,10 @@ function renderProventosPieChart(data) {
     });
     const total = values.reduce((a, b) => a + b, 0);
 
-    // Canvas sizing
+    // Canvas sizing — garante size mínimo mesmo se o container não estiver visível
     const dpr = window.devicePixelRatio || 1;
-    const size = Math.min(380, canvas.parentElement.clientWidth - 40);
+    const parentWidth = canvas.parentElement ? canvas.parentElement.clientWidth : 0;
+    const size = Math.max(200, Math.min(380, parentWidth - 40));
     canvas.width = size * dpr;
     canvas.height = size * dpr;
     canvas.style.width = size + 'px';
@@ -897,6 +898,8 @@ function handleImportFile(event) {
         // Resetar o input APÓS a leitura concluir (não antes — mobile cancela a leitura)
         event.target.value = '';
 
+        let parsed = null;
+
         try {
             const raw = e.target.result;
             if (!raw || raw.trim() === '') {
@@ -912,15 +915,22 @@ function handleImportFile(event) {
                 return;
             }
 
-            if (data.kraken)   saveData('byfinance_kraken', data.kraken);
+            if (data.kraken)    saveData('byfinance_kraken', data.kraken);
             if (data.proventos) saveData('byfinance_proventos', data.proventos);
-            if (data.aportes)  saveData('byfinance_aportes', data.aportes);
+            if (data.aportes)   saveData('byfinance_aportes', data.aportes);
 
-            initDashboard();
-            showToast('Dados importados com sucesso!');
+            parsed = true;
         } catch (err) {
             console.error('Erro ao importar:', err);
             showToast('Erro ao ler o arquivo. Verifique se é um JSON válido.', 'error');
+            return;
+        }
+
+        // initDashboard fora do try/catch — erros de renderização (canvas, etc.)
+        // não devem aparecer como "erro ao importar"
+        if (parsed) {
+            showToast('Dados importados com sucesso!');
+            setTimeout(() => initDashboard(), 100);
         }
     };
 
