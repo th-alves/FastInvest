@@ -796,14 +796,46 @@ function toggleMenu() {
     dropdown.classList.toggle('open');
 }
 
-// Fechar o menu ao clicar fora
+function toggleImportExportMenu() {
+    const dropdown = document.getElementById('menuDropdownDesktop');
+    const button = document.getElementById('btnImportExport');
+    const isOpen = dropdown.classList.contains('open');
+    
+    if (isOpen) {
+        dropdown.classList.remove('open');
+        button.classList.remove('active');
+    } else {
+        dropdown.classList.add('open');
+        button.classList.add('active');
+    }
+}
+
+function closeImportExportMenu() {
+    const dropdown = document.getElementById('menuDropdownDesktop');
+    const button = document.getElementById('btnImportExport');
+    if (dropdown) dropdown.classList.remove('open');
+    if (button) button.classList.remove('active');
+}
+
+// Fechar os menus ao clicar fora
 document.addEventListener('click', function(event) {
     const hamburger = document.getElementById('menuHamburger');
     const dropdown = document.getElementById('menuDropdown');
+    const btnImportExport = document.getElementById('btnImportExport');
+    const dropdownDesktop = document.getElementById('menuDropdownDesktop');
+    const importExportContainer = document.getElementById('importExportContainer');
     
-    if (!hamburger.contains(event.target) && !dropdown.contains(event.target)) {
-        hamburger.classList.remove('active');
-        dropdown.classList.remove('open');
+    // Fechar menu móvel ao clicar fora do hamburguer e do dropdown
+    if (hamburger && dropdown) {
+        if (!hamburger.contains(event.target) && !dropdown.contains(event.target)) {
+            hamburger.classList.remove('active');
+            dropdown.classList.remove('open');
+        }
+    }
+    
+    // Fechar menu desktop ao clicar fora do container inteiro (botão + dropdown)
+    if (importExportContainer && !importExportContainer.contains(event.target)) {
+        closeImportExportMenu();
     }
 });
 
