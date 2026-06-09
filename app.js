@@ -854,7 +854,10 @@ function exportData() {
     const a = document.createElement('a');
     a.href = url;
     a.download = `byfinance_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    // Necessário adicionar ao DOM para funcionar em iOS/Safari mobile
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('Dados exportados com sucesso!');
 }
@@ -880,21 +883,53 @@ function closeMenu() {
 function handleImportFile(event) {
     const file = event.target.files[0];
     if (!file) return;
+
+    // Validação básica antes de ler
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+        showToast('Selecione um arquivo .json válido', 'error');
+        event.target.value = '';
+        return;
+    }
+
     const reader = new FileReader();
+
     reader.onload = function (e) {
+        // Resetar o input APÓS a leitura concluir (não antes — mobile cancela a leitura)
+        event.target.value = '';
+
         try {
-            const data = JSON.parse(e.target.result);
-            if (data.kraken) saveData('byfinance_kraken', data.kraken);
+            const raw = e.target.result;
+            if (!raw || raw.trim() === '') {
+                showToast('Arquivo vazio ou inválido', 'error');
+                return;
+            }
+
+            const data = JSON.parse(raw);
+
+            // Verificar se é um backup ByFinance válido
+            if (!data.kraken && !data.proventos && !data.aportes) {
+                showToast('Arquivo não parece ser um backup do ByFinance', 'error');
+                return;
+            }
+
+            if (data.kraken)   saveData('byfinance_kraken', data.kraken);
             if (data.proventos) saveData('byfinance_proventos', data.proventos);
-            if (data.aportes) saveData('byfinance_aportes', data.aportes);
+            if (data.aportes)  saveData('byfinance_aportes', data.aportes);
+
             initDashboard();
             showToast('Dados importados com sucesso!');
         } catch (err) {
-            showToast('Erro ao importar arquivo', 'error');
+            console.error('Erro ao importar:', err);
+            showToast('Erro ao ler o arquivo. Verifique se é um JSON válido.', 'error');
         }
     };
-    reader.readAsText(file);
-    event.target.value = '';
+
+    reader.onerror = function () {
+        event.target.value = '';
+        showToast('Não foi possível ler o arquivo', 'error');
+    };
+
+    reader.readAsText(file, 'UTF-8');
 }
 
 // ============================================================
