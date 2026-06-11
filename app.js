@@ -5,12 +5,12 @@
 
 // ===================== CONSTANTS =====================
 const KRAKEN_CATEGORIES = [
-    { key: 'K1', letter: 'K', name: 'Caixa', idealMin: 10, idealMax: 15, color: '#3B82F6', desc: 'Reserva de emergência e liquidez' },
-    { key: 'R', letter: 'R', name: 'REITs / FIIs', idealMin: 25, idealMax: 25, color: '#FF6B00', desc: 'Fundos Imobiliários' },
-    { key: 'A', letter: 'A', name: 'Ações BR', idealMin: 25, idealMax: 25, color: '#10B981', desc: 'Ações brasileiras' },
-    { key: 'K2', letter: 'K', name: 'Criptomoedas', idealMin: 1, idealMax: 5, color: '#F59E0B', desc: 'Ativos digitais' },
-    { key: 'E', letter: 'E', name: 'Exterior / Stocks', idealMin: 25, idealMax: 25, color: '#8B5CF6', desc: 'Investimentos no exterior' },
-    { key: 'N', letter: 'N', name: 'Negócios', idealMin: 10, idealMax: 15, color: '#EC4899', desc: 'Negócios e empreendimentos' }
+    { key: 'K1', letter: 'K', name: 'Caixa', idealMin: 10, idealMax: 15, color: '#A366FF', desc: 'Reserva de emergência e liquidez' },
+    { key: 'R', letter: 'R', name: 'REITs / FIIs', idealMin: 25, idealMax: 25, color: '#E63946', desc: 'Fundos Imobiliários' },
+    { key: 'A', letter: 'A', name: 'Ações BR', idealMin: 25, idealMax: 25, color: '#34D399', desc: 'Ações brasileiras' },
+    { key: 'K2', letter: 'K', name: 'Criptomoedas', idealMin: 1, idealMax: 5, color: '#FFB703', desc: 'Ativos digitais' },
+    { key: 'E', letter: 'E', name: 'Exterior / Stocks', idealMin: 25, idealMax: 25, color: '#FF6B7A', desc: 'Investimentos no exterior' },
+    { key: 'N', letter: 'N', name: 'Negócios', idealMin: 10, idealMax: 15, color: '#F43F5E', desc: 'Negócios e empreendimentos' }
 ];
 
 const MONTH_NAMES = [
@@ -25,9 +25,9 @@ const MONTH_NAMES_SHORT = [
 
 // Pie chart colors (for monthly proventos distribution)
 const PIE_COLORS = [
-    '#FF6B00', '#2563EB', '#10B981', '#F59E0B', '#8B5CF6',
-    '#EC4899', '#06B6D4', '#EF4444', '#84CC16', '#6366F1',
-    '#F97316', '#14B8A6', '#E879F9'
+    '#E63946', '#FFB703', '#A366FF', '#34D399', '#FF6B7A',
+    '#F43F5E', '#FFC94D', '#B88AFF', '#2D9F6F', '#FF8A96',
+    '#E09F00', '#D962A0', '#FF5C6B'
 ];
 
 // ===================== STATE =====================
@@ -109,6 +109,7 @@ function enterDashboard() {
     setTimeout(() => {
         dashboard.classList.add('active');
         document.body.classList.add('dashboard-active');
+        initDashboardParticles();
         initDashboard();
     }, 350);
 }
@@ -181,6 +182,31 @@ function initParticles() {
         particle.style.animationDuration = (3 + Math.random() * 4) + 's';
         particle.style.opacity = 0;
         container.appendChild(particle);
+    }
+}
+
+function initDashboardParticles() {
+    const container = document.getElementById('dashboardParticles');
+    if (!container || container.children.length > 0) return; // avoid re-spawn
+
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'd-particle';
+
+        // Bias particles to left and right edges (outside card area)
+        const side = i < 10 ? Math.random() * 16 : 84 + Math.random() * 16;
+        p.style.left = side + '%';
+
+        p.style.bottom = -(Math.random() * 20) + '%';
+        p.style.animationDelay = (Math.random() * 8) + 's';
+        p.style.animationDuration = (5 + Math.random() * 6) + 's';
+
+        const size = 1.5 + Math.random() * 2;
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.opacity = 0;
+
+        container.appendChild(p);
     }
 }
 
@@ -618,7 +644,7 @@ function renderProventosPieChart(data) {
         ctx.fill();
 
         // Subtle border between slices
-        ctx.strokeStyle = 'rgba(6, 10, 20, 0.6)';
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-base').trim() || '#0A0A0A';
         ctx.lineWidth = 2;
         ctx.stroke();
 
@@ -641,13 +667,15 @@ function renderProventosPieChart(data) {
     });
 
     // Center text (total)
-    ctx.fillStyle = '#8A96AA';
+    const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#6B6058';
+    const textPrimary = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#F0EBE3';
+    ctx.fillStyle = textMuted;
     ctx.font = `500 ${Math.max(11, size * 0.035)}px Inter`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('Total', cx, cy - 12);
 
-    ctx.fillStyle = '#F0F2F5';
+    ctx.fillStyle = textPrimary;
     ctx.font = `700 ${Math.max(14, size * 0.05)}px Inter`;
     ctx.fillText(formatCurrency(total), cx, cy + 12);
 
@@ -954,7 +982,9 @@ window.addEventListener('resize', () => {
 
 // Init on load
 window.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     initParticles();
+    initMouseGlow();
 
     // Sempre mostrar a landing page primeiro (removido auto-enter do dashboard)
     // const hasData = localStorage.getItem('byfinance_kraken') ||
@@ -964,3 +994,55 @@ window.addEventListener('DOMContentLoaded', () => {
     //     enterDashboard();
     // }
 });
+
+// ============================================================
+// MOUSE GLOW EFFECT
+// ============================================================
+function initMouseGlow() {
+    document.getElementById('dashboard').addEventListener('mousemove', e => {
+        for(const card of document.querySelectorAll('.card, .stat-card, .category-card')) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        }
+    });
+}
+
+// ============================================================
+// THEME TOGGLE
+// ============================================================
+function initTheme() {
+    const saved = localStorage.getItem('byfinance_theme');
+    if (saved === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        updateThemeMeta('light');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+        updateThemeMeta('dark');
+    }
+}
+
+function toggleTheme() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    if (isLight) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('byfinance_theme', 'dark');
+        updateThemeMeta('dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('byfinance_theme', 'light');
+        updateThemeMeta('light');
+    }
+    // Re-render chart with new theme colors
+    const data = getProventosData();
+    renderProventosPieChart(data);
+}
+
+function updateThemeMeta(theme) {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+        meta.setAttribute('content', theme === 'light' ? '#FEF7ED' : '#0A0A0A');
+    }
+}
