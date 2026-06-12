@@ -2551,3 +2551,23 @@ ul, ol { list-style: none; }
   color: var(--text-muted);
   flex-shrink: 0;
 }
+
+/* ── App Footer ──────────────────────────────────────────── */
+.app-footer {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-lg) var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.footer-link {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color var(--duration-base) var(--ease-out);
+}
+
+.footer-link:hover {
+  color: var(--primary);
+}
