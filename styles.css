@@ -973,6 +973,19 @@ ul, ol { list-style: none; }
   gap: var(--space-lg);
 }
 
+/* Spacer pushes the right group to the far right on desktop */
+.header-spacer {
+  flex: 1;
+}
+
+/* Right group: tabs + theme toggle + dados button */
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
 .header-logo {
   display: flex;
   align-items: center;
@@ -1007,7 +1020,7 @@ ul, ol { list-style: none; }
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  flex: 1;
+  flex-shrink: 0;
 }
 
 .tab-indicator {
@@ -1980,25 +1993,30 @@ ul, ol { list-style: none; }
   /* ── Header Mobile ──────────────────────────────────────── */
   .dashboard-header { 
     padding: 0 var(--space-md);
-    height: auto;
+    height: var(--header-height);
     flex-direction: row;
-    gap: var(--space-md);
     align-items: center;
   }
 
   .header-inner {
     width: 100%;
     flex-direction: row;
-    gap: var(--space-md);
-    height: auto;
+    align-items: center;
+    gap: 0;
+    height: 100%;
     max-width: none;
     position: relative;
   }
 
+  /* Logo: centered absolutely on mobile */
   .header-logo { 
-    justify-content: flex-start;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: center;
     flex-shrink: 0;
     gap: var(--space-sm);
+    pointer-events: auto;
   }
 
   .header-logo svg {
@@ -2012,59 +2030,25 @@ ul, ol { list-style: none; }
     font-weight: 700;
   }
 
-  /* ── Navbar Mobile ──────────────────────────────────────── */
-  .tab-nav {
-    flex: 1;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    gap: var(--space-sm);
-    padding: var(--space-sm) 0;
-    background: transparent;
-    border: none;
-    justify-content: flex-start;
-  }
-
-  .tab-nav::-webkit-scrollbar {
+  /* Spacer hidden on mobile */
+  .header-spacer {
     display: none;
   }
 
+  /* Right group (tabs + controls) hidden on mobile — goes into hamburger */
+  .header-right-group {
+    display: none;
+  }
+
+  /* tab-nav inside right-group is already hidden; desktop styles don't apply */
   .tab-indicator { display: none; }
-
-  .tab-btn {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-    gap: 4px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    background: transparent;
-    border: 1px solid var(--border-subtle);
-    position: relative;
-    border-radius: var(--radius-md);
-    letter-spacing: 0.02em;
-    font-weight: 500;
-  }
-
-  .tab-btn svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .tab-btn.active {
-    background: var(--primary);
-    color: var(--primary-btn-text);
-    border-color: var(--primary);
-  }
-
-  .tab-btn:hover {
-    border-color: var(--primary);
-    background: var(--primary-a08);
-  }
 
   /* ── Import/Export Mobile ───────────────────────────────── */
   .import-export-container {
     display: none !important;
   }
 
+  /* Hamburger: pushed to far right via margin-left auto */
   .menu-hamburger {
     display: flex !important;
     flex-direction: column;
@@ -2080,6 +2064,7 @@ ul, ol { list-style: none; }
     transition: all var(--duration-base) var(--ease-out);
     flex-shrink: 0;
     gap: 0;
+    margin-left: auto;
   }
 
   .menu-hamburger:hover {
@@ -2184,6 +2169,80 @@ ul, ol { list-style: none; }
   /* Hide desktop dropdown in mobile */
   .menu-dropdown-desktop {
     display: none !important;
+  }
+
+  /* ── Mobile menu: tabs section ─────────────────────────── */
+  .menu-tabs-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-sm);
+  }
+
+  .menu-tab-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all var(--duration-base) var(--ease-out);
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .menu-tab-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .menu-tab-item:hover {
+    color: var(--text-primary);
+    background: var(--white-a04);
+  }
+
+  .menu-tab-item.active {
+    color: var(--primary);
+    background: var(--primary-a10);
+  }
+
+  /* ── Mobile menu: divider ───────────────────────────────── */
+  .menu-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 0;
+  }
+
+  /* ── Mobile menu: theme toggle item ────────────────────── */
+  .menu-item .icon-sun,
+  .menu-item .icon-moon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .menu-item .menu-theme-label {
+    flex: 1;
+  }
+
+  /* Show/hide sun/moon in menu based on theme (same as header toggle) */
+  .menu-item .icon-sun { display: block; }
+  .menu-item .icon-moon { display: none; }
+  [data-theme="light"] .menu-item .icon-sun { display: none; }
+  [data-theme="light"] .menu-item .icon-moon { display: block; }
+
+  /* Remove border-bottom override for last .menu-item in tabs section */
+  .menu-tabs-section .menu-tab-item:not(:last-child) {
+    border-bottom: none;
   }
 
   .stats-row,

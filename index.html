@@ -87,6 +87,7 @@
         <!-- Header -->
         <header class="dashboard-header">
             <div class="header-inner">
+                <!-- Logo (left on desktop, centered on mobile) -->
                 <div class="header-logo" onclick="goToLanding()" title="Voltar à página inicial">
                     <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
                         <rect x="2" y="2" width="52" height="52" rx="14" stroke="url(#logoGrad2)" stroke-width="2.5" fill="none"/>
@@ -100,65 +101,101 @@
                     </svg>
                     <span class="header-title">By<span class="logo-highlight">Finance</span></span>
                 </div>
-                <nav class="tab-nav" id="tabNav">
-                    <button class="tab-btn active" data-tab="kraken" onclick="switchTab('kraken')">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1.5 5.5V10.5L8 14.5L14.5 10.5V5.5L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-                        <span>KRAKEN</span>
-                    </button>
-                    <button class="tab-btn" data-tab="proventos" onclick="switchTab('proventos')">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V7L4.5 3.5H11.5L14 7V12H2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 7H14" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
-                        <span>PROVENTOS</span>
-                    </button>
-                    <button class="tab-btn" data-tab="aporte" onclick="switchTab('aporte')">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V11.5M4.5 8H11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                        <span>APORTE</span>
-                    </button>
-                    <div class="tab-indicator" id="tabIndicator"></div>
-                </nav>
-                
-                <!-- Theme Toggle -->
-                <button class="theme-toggle" id="dashboardThemeToggle" onclick="toggleTheme()" title="Alternar tema">
-                    <svg class="icon-sun" width="18" height="18" viewBox="0 0 20 20" fill="none">
-                        <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M10 2V4M10 16V18M2 10H4M16 10H18M4.93 4.93L6.34 6.34M13.66 13.66L15.07 15.07M4.93 15.07L6.34 13.66M13.66 6.34L15.07 4.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    <svg class="icon-moon" width="18" height="18" viewBox="0 0 20 20" fill="none">
-                        <path d="M17 11.5A7.5 7.5 0 018.5 3c0-.82.13-1.6.37-2.34A8 8 0 1018.34 11.13c-.43.24-.88.37-1.34.37z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
 
-                <!-- Botão Importar/Exportar Desktop + Dropdown (desktop only) -->
-                <div class="import-export-container" id="importExportContainer">
-                    <button class="btn-import-export" id="btnImportExport" onclick="toggleImportExportMenu()">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                            <path d="M7 10L12 5L17 10M12 5V14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M3 18H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                            <path d="M7 14L12 19L17 14M12 19V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Spacer: pushes right group to the end on desktop -->
+                <div class="header-spacer"></div>
+
+                <!-- Right group: tabs + controls (desktop), hidden on mobile -->
+                <div class="header-right-group">
+                    <!-- Tab Navigation -->
+                    <nav class="tab-nav" id="tabNav">
+                        <button class="tab-btn active" data-tab="kraken" onclick="switchTab('kraken')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1.5 5.5V10.5L8 14.5L14.5 10.5V5.5L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                            <span>KRAKEN</span>
+                        </button>
+                        <button class="tab-btn" data-tab="proventos" onclick="switchTab('proventos')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V7L4.5 3.5H11.5L14 7V12H2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 7H14" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
+                            <span>PROVENTOS</span>
+                        </button>
+                        <button class="tab-btn" data-tab="aporte" onclick="switchTab('aporte')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V11.5M4.5 8H11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                            <span>APORTE</span>
+                        </button>
+                        <div class="tab-indicator" id="tabIndicator"></div>
+                    </nav>
+
+                    <!-- Theme Toggle -->
+                    <button class="theme-toggle" id="dashboardThemeToggle" onclick="toggleTheme()" title="Alternar tema">
+                        <svg class="icon-sun" width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M10 2V4M10 16V18M2 10H4M16 10H18M4.93 4.93L6.34 6.34M13.66 13.66L15.07 15.07M4.93 15.07L6.34 13.66M13.66 6.34L15.07 4.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
-                        <span class="btn-text">Dados</span>
+                        <svg class="icon-moon" width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <path d="M17 11.5A7.5 7.5 0 018.5 3c0-.82.13-1.6.37-2.34A8 8 0 1018.34 11.13c-.43.24-.88.37-1.34.37z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                     </button>
-                    <!-- Dropdown Desktop (dentro do container para position: absolute funcionar) -->
-                    <div class="menu-dropdown-desktop" id="menuDropdownDesktop">
-                        <button class="menu-item" onclick="exportData(); closeImportExportMenu()">
-                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 3V11M9 11L6 8M9 11L12 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span>Exportar Backup</span>
+
+                    <!-- Botão Importar/Exportar Desktop + Dropdown -->
+                    <div class="import-export-container" id="importExportContainer">
+                        <button class="btn-import-export" id="btnImportExport" onclick="toggleImportExportMenu()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M7 10L12 5L17 10M12 5V14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M3 18H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <path d="M7 14L12 19L17 14M12 19V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="btn-text">Dados</span>
                         </button>
-                        <button class="menu-item" onclick="importData(); closeImportExportMenu()">
-                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 11V3M9 3L6 6M9 3L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <span>Importar Backup</span>
-                        </button>
+                        <div class="menu-dropdown-desktop" id="menuDropdownDesktop">
+                            <button class="menu-item" onclick="exportData(); closeImportExportMenu()">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 3V11M9 11L6 8M9 11L12 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Exportar Backup</span>
+                            </button>
+                            <button class="menu-item" onclick="importData(); closeImportExportMenu()">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 11V3M9 3L6 6M9 3L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <span>Importar Backup</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Menu Hamburguer Mobile -->
+                <!-- Menu Hamburguer Mobile only -->
                 <button class="menu-hamburger" id="menuHamburger" onclick="toggleMenu()">
                     <span class="hamburger-line hamburger-line-1"></span>
                     <span class="hamburger-line hamburger-line-2"></span>
                     <span class="hamburger-line hamburger-line-3"></span>
                 </button>
 
-                <!-- Dropdown Menu Mobile (âncora no header-inner via position: fixed-like) -->
+                <!-- Dropdown Menu Mobile -->
                 <div class="menu-dropdown" id="menuDropdown">
+                    <!-- Tabs section inside mobile menu -->
+                    <div class="menu-tabs-section">
+                        <button class="menu-tab-item tab-btn active" data-tab="kraken" onclick="switchTab('kraken'); closeMenu()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1.5 5.5V10.5L8 14.5L14.5 10.5V5.5L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                            <span>KRAKEN</span>
+                        </button>
+                        <button class="menu-tab-item tab-btn" data-tab="proventos" onclick="switchTab('proventos'); closeMenu()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V7L4.5 3.5H11.5L14 7V12H2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 7H14" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
+                            <span>PROVENTOS</span>
+                        </button>
+                        <button class="menu-tab-item tab-btn" data-tab="aporte" onclick="switchTab('aporte'); closeMenu()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4.5V11.5M4.5 8H11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                            <span>APORTE</span>
+                        </button>
+                    </div>
+                    <div class="menu-divider"></div>
+                    <!-- Theme toggle inside mobile menu -->
+                    <button class="menu-item" onclick="toggleTheme()">
+                        <svg class="icon-sun" width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M10 2V4M10 16V18M2 10H4M16 10H18M4.93 4.93L6.34 6.34M13.66 13.66L15.07 15.07M4.93 15.07L6.34 13.66M13.66 6.34L15.07 4.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <svg class="icon-moon" width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <path d="M17 11.5A7.5 7.5 0 018.5 3c0-.82.13-1.6.37-2.34A8 8 0 1018.34 11.13c-.43.24-.88.37-1.34.37z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="menu-theme-label">Alternar tema</span>
+                    </button>
+                    <div class="menu-divider"></div>
+                    <!-- Data actions -->
                     <button class="menu-item" onclick="exportData(); closeMenu()">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 3V11M9 11L6 8M9 11L12 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         <span>Exportar dados</span>
