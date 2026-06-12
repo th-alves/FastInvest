@@ -370,10 +370,32 @@
                     </div>
                 </div>
 
+                <!-- Bar Chart: Histórico Mensal -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Histórico Mensal</h3>
+                        <div class="bar-chart-toggles" id="barChartToggles">
+                            <button class="bar-toggle-btn active" onclick="setBarMode('dividendos')">Dividendos</button>
+                            <button class="bar-toggle-btn" onclick="setBarMode('dividendosFII')">Div. FIIs</button>
+                            <button class="bar-toggle-btn" onclick="setBarMode('yieldFII')">Yield FII</button>
+                        </div>
+                    </div>
+                    <div class="bar-chart-wrap" id="barChartWrap">
+                        <canvas id="barChart"></canvas>
+                        <div class="chart-empty" id="barChartEmpty">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="28" width="8" height="14" rx="2" stroke="currentColor" stroke-width="1.8" opacity="0.2"/><rect x="20" y="18" width="8" height="24" rx="2" stroke="currentColor" stroke-width="1.8" opacity="0.2"/><rect x="34" y="10" width="8" height="32" rx="2" stroke="currentColor" stroke-width="1.8" opacity="0.2"/></svg>
+                            <p>Registre proventos para visualizar o histórico</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- History Table -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Histórico de Proventos</h3>
+                    </div>
+                    <div class="proventos-filters" id="proventosFilters">
+                        <!-- chips gerados via JS -->
                     </div>
                     <div class="table-wrapper">
                         <table class="data-table" id="proventosTable">

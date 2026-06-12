@@ -33,6 +33,8 @@ const PIE_COLORS = [
 // ===================== STATE =====================
 let currentProventosMonth = { year: new Date().getFullYear(), month: new Date().getMonth() };
 let currentAporteMonth = { year: new Date().getFullYear(), month: new Date().getMonth() };
+let currentBarMode = 'dividendos';
+let currentProventosFilter = 'all';
 
 // ===================== STORAGE HELPERS =====================
 function loadData(key, fallback) {
@@ -401,6 +403,12 @@ function renderProventos() {
     // Table
     renderProventosTable(data);
 
+    // Bar chart
+    renderBarChart(data, currentBarMode);
+
+    // Filters
+    renderProventosFilters(data);
+
     // Chart
     renderProventosPieChart(data);
 }
@@ -502,7 +510,29 @@ function updateProventosSummary(data) {
 }
 
 function renderProventosTable(data) {
-    const keys = Object.keys(data).sort();
+    let keys = Object.keys(data).sort();
+
+    // Apply active filter
+    const now = new Date();
+    if (currentProventosFilter !== 'all') {
+        if (currentProventosFilter === '6m') {
+            const cutoff = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+            keys = keys.filter(k => {
+                const d = data[k];
+                return new Date(d.year, d.month, 1) >= cutoff;
+            });
+        } else if (currentProventosFilter === '12m') {
+            const cutoff = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+            keys = keys.filter(k => {
+                const d = data[k];
+                return new Date(d.year, d.month, 1) >= cutoff;
+            });
+        } else {
+            // year filter e.g. "2025"
+            keys = keys.filter(k => String(data[k].year) === currentProventosFilter);
+        }
+    }
+
     const tbody = document.getElementById('proventosTableBody');
     const emptyState = document.getElementById('proventosEmpty');
 
@@ -688,6 +718,146 @@ function renderProventosPieChart(data) {
             <span>${label}: ${formatCurrency(val)}</span>
         </div>`;
     }).join('');
+}
+
+// ============================================================
+// BAR CHART — Histórico Mensal
+// ============================================================
+
+function setBarMode(mode) {
+    currentBarMode = mode;
+    const labels = { dividendos: 'Dividendos', dividendosFII: 'Div. FIIs', yieldFII: 'Yield FII' };
+    document.querySelectorAll('.bar-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === labels[mode]);
+    });
+    renderBarChart(getProventosData(), mode);
+}
+
+function renderBarChart(data, mode) {
+    const canvas = document.getElementById('barChart');
+    const emptyEl = document.getElementById('barChartEmpty');
+    if (!canvas) return;
+
+    const keys = Object.keys(data).sort();
+    const validKeys = keys.filter(k => {
+        const d = data[k];
+        if (mode === 'dividendos') return (d.dividendos || 0) > 0;
+        if (mode === 'dividendosFII') return (d.dividendosFII || 0) > 0;
+        return (d.valorFII || 0) > 0;
+    });
+
+    if (validKeys.length === 0) {
+        emptyEl.style.display = 'flex';
+        canvas.style.display = 'none';
+        return;
+    }
+    emptyEl.style.display = 'none';
+    canvas.style.display = '';
+
+    const values = validKeys.map(k => {
+        const d = data[k];
+        if (mode === 'dividendos') return d.dividendos || 0;
+        if (mode === 'dividendosFII') return d.dividendosFII || 0;
+        return (d.valorFII || 0) > 0 ? ((d.dividendosFII || 0) / d.valorFII) * 100 : 0;
+    });
+    const labels = validKeys.map(k => {
+        const d = data[k];
+        return monthLabelShort(d.year, d.month);
+    });
+
+    const dpr = window.devicePixelRatio || 1;
+    const wrapEl = document.getElementById('barChartWrap');
+    const containerW = wrapEl ? wrapEl.clientWidth : 600;
+    const W = Math.max(300, containerW);
+    const H = 180;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    const styles = getComputedStyle(document.documentElement);
+    const primary   = styles.getPropertyValue('--primary').trim() || '#E63946';
+    const textMuted = styles.getPropertyValue('--text-muted').trim() || '#6B6058';
+    const borderCol = styles.getPropertyValue('--border-subtle').trim() || '#2A2522';
+
+    const padL = 8, padR = 8, padTop = 28, padBot = 36;
+    const chartW = W - padL - padR;
+    const chartH = H - padTop - padBot;
+    const maxVal = Math.max(...values, 0.001);
+    const barW = Math.max(8, Math.min(40, (chartW / validKeys.length) * 0.6));
+    const gap = chartW / validKeys.length;
+
+    // Baseline
+    ctx.beginPath();
+    ctx.strokeStyle = borderCol;
+    ctx.lineWidth = 1;
+    ctx.moveTo(padL, padTop + chartH);
+    ctx.lineTo(W - padR, padTop + chartH);
+    ctx.stroke();
+
+    values.forEach((val, i) => {
+        const barH = Math.max(2, (val / maxVal) * chartH);
+        const x = padL + gap * i + (gap - barW) / 2;
+        const y = padTop + chartH - barH;
+
+        ctx.fillStyle = primary;
+        ctx.globalAlpha = 0.75;
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
+            ctx.fill();
+        } else {
+            ctx.fillRect(x, y, barW, barH);
+        }
+        ctx.globalAlpha = 1;
+
+        // Always show value label above the bar
+        const valStr = (mode === 'dividendos' || mode === 'dividendosFII')
+            ? 'R$' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : val.toFixed(2) + '%';
+        ctx.fillStyle = primary;
+        ctx.font = '500 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(valStr, padL + gap * i + gap / 2, y - 5);
+
+        ctx.fillStyle = textMuted;
+        ctx.font = '400 9px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(labels[i], padL + gap * i + gap / 2, padTop + chartH + 14);
+    });
+}
+
+// ============================================================
+// FILTROS — Histórico de Proventos
+// ============================================================
+
+function setProventosFilter(filter) {
+    currentProventosFilter = filter;
+    renderProventos();
+}
+
+function renderProventosFilters(data) {
+    const container = document.getElementById('proventosFilters');
+    if (!container) return;
+
+    const keys = Object.keys(data).sort();
+    const years = [...new Set(keys.map(k => String(data[k].year)))].sort();
+
+    const filters = [
+        { id: 'all', label: 'Todos' },
+        { id: '6m',  label: 'Últimos 6 meses' },
+        { id: '12m', label: 'Últimos 12 meses' },
+        ...years.map(y => ({ id: y, label: y }))
+    ];
+
+    container.innerHTML = filters.map(f =>
+        `<button class="filter-chip${currentProventosFilter === f.id ? ' active' : ''}"
+            onclick="setProventosFilter('${f.id}')">${f.label}</button>`
+    ).join('');
 }
 
 // ============================================================

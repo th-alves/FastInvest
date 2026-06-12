@@ -1740,6 +1740,85 @@ ul, ol { list-style: none; }
   color: var(--text-muted);
 }
 
+/* ── Bar Chart ───────────────────────────────────────────── */
+.bar-chart-wrap {
+  position: relative;
+  width: 100%;
+  padding: var(--space-md) 0 var(--space-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bar-chart-wrap canvas {
+  display: block;
+  max-width: 100%;
+}
+
+.bar-chart-toggles {
+  display: flex;
+  gap: 4px;
+}
+
+.bar-toggle-btn {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+  letter-spacing: 0.02em;
+}
+
+.bar-toggle-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--primary);
+}
+
+.bar-toggle-btn.active {
+  background: var(--primary);
+  color: var(--primary-btn-text);
+  border-color: var(--primary);
+}
+
+/* ── Filter Chips ────────────────────────────────────────── */
+.proventos-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0;
+}
+
+.filter-chip {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+  white-space: nowrap;
+}
+
+.filter-chip:hover {
+  color: var(--text-primary);
+  border-color: var(--primary);
+  background: var(--primary-a08);
+}
+
+.filter-chip.active {
+  background: var(--primary);
+  color: var(--primary-btn-text);
+  border-color: var(--primary);
+}
+
 /* ── Data Table ──────────────────────────────────────────── */
 .table-wrapper {
   overflow-x: auto;
@@ -2315,6 +2394,27 @@ ul, ol { list-style: none; }
   .landing-theme-toggle {
     top: var(--space-md);
     right: var(--space-md);
+  }
+
+  /* ── Bar chart mobile ───────────────────────────────────── */
+  .bar-chart-wrap {
+    padding: var(--space-sm) 0;
+  }
+
+  .bar-toggle-btn {
+    padding: 3px 10px;
+    font-size: 0.7rem;
+  }
+
+  /* ── Filter chips mobile ─────────────────────────────────── */
+  .proventos-filters {
+    padding: var(--space-md) var(--space-md) var(--space-sm);
+    gap: 5px;
+  }
+
+  .filter-chip {
+    padding: 3px 10px;
+    font-size: 0.7rem;
   }
 
 } /* fim: @media (max-width: 768px) */
