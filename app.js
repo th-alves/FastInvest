@@ -768,7 +768,9 @@ function renderBarChart(data, mode) {
     const dpr = window.devicePixelRatio || 1;
     const wrapEl = document.getElementById('barChartWrap');
     const containerW = wrapEl ? wrapEl.clientWidth : 600;
-    const W = Math.max(300, containerW);
+    const minColW = 52; // minimum px per column — prevents cramping on mobile
+    const minW = validKeys.length * minColW;
+    const W = Math.max(minW, containerW);
     const H = 180;
     canvas.width = W * dpr;
     canvas.height = H * dpr;

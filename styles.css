@@ -1745,14 +1745,27 @@ ul, ol { list-style: none; }
   position: relative;
   width: 100%;
   padding: var(--space-md) 0 var(--space-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bar-chart-wrap::-webkit-scrollbar {
+  height: 4px;
+}
+
+.bar-chart-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bar-chart-wrap::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: var(--radius-full);
 }
 
 .bar-chart-wrap canvas {
   display: block;
-  max-width: 100%;
+  flex-shrink: 0;
 }
 
 .bar-chart-toggles {
@@ -2398,7 +2411,7 @@ ul, ol { list-style: none; }
 
   /* ── Bar chart mobile ───────────────────────────────────── */
   .bar-chart-wrap {
-    padding: var(--space-sm) 0;
+    padding: var(--space-sm) 0 var(--space-md);
   }
 
   .bar-toggle-btn {
