@@ -1,5 +1,5 @@
 // ============================================================
-// ByFinance — App Logic
+// FastInvest — App Logic
 // All data persisted in LocalStorage
 // ============================================================
 
@@ -1109,9 +1109,9 @@ function handleImportFile(event) {
 
             const data = JSON.parse(raw);
 
-            // Verificar se é um backup ByFinance válido
+            // Verificar se é um backup FastInvest válido
             if (!data.kraken && !data.proventos && !data.aportes) {
-                showToast('Arquivo não parece ser um backup do ByFinance', 'error');
+                showToast('Arquivo não parece ser um backup do FastInvest', 'error');
                 return;
             }
 

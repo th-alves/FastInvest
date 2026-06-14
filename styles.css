@@ -2556,8 +2556,7 @@ ul, ol { list-style: none; }
 .app-footer {
   display: flex;
   justify-content: center;
-  padding: var(--space-lg) var(--space-md);
-  margin-top: var(--space-lg);
+  padding: var(--space-xl) var(--space-md) var(--space-lg);
 }
 
 .footer-link {
