@@ -451,24 +451,21 @@ function updateProventosCalc(monthData, key, allData) {
     const ganhoCapPct = va > 0 ? (ganhoCapR / va) * 100 : 0;
     const yieldFII = valFII > 0 ? (divFII / valFII) * 100 : 0;
 
-    // Performance: need previous month total proventos
-    const sortedKeys = Object.keys(allData).sort();
-    const currentIdx = sortedKeys.indexOf(key);
+    // Performance: (Ganho de Capital + Total de Proventos) / Saldo Bruto
+    // Equivalente à planilha: (D1 + C13) / B1
+    let totalProventos = 0;
+    Object.keys(allData).forEach(k => { totalProventos += (allData[k].dividendos || 0); });
     let performance = null;
-    if (currentIdx > 0) {
-        let totalProvPrev = 0;
-        for (let i = 0; i <= currentIdx - 1; i++) {
-            totalProvPrev += (allData[sortedKeys[i]]?.dividendos || 0);
-        }
-        if (ganhoCapR !== 0) {
-            performance = (ganhoCapR - (sb - totalProvPrev)) / ganhoCapR * 100;
-        }
+    if (sb > 0) {
+        performance = ((ganhoCapR + totalProventos) / sb) * 100;
     }
 
     document.getElementById('calcGanhoCapital').textContent = formatCurrency(ganhoCapR);
     document.getElementById('calcGanhoCapitalPct').textContent = formatPercent(ganhoCapPct);
     document.getElementById('calcYieldFII').textContent = formatPercent(yieldFII);
-    document.getElementById('calcPerformance').textContent = performance !== null ? formatPercent(performance) : '—';
+    const perfEl = document.getElementById('calcPerformance');
+    perfEl.textContent = performance !== null ? formatPercent(performance) : '—';
+    perfEl.className = performance !== null ? (performance >= 0 ? 'positive' : 'negative') : '';
 }
 
 function updateProventosSummary(data) {
@@ -487,18 +484,14 @@ function updateProventosSummary(data) {
         const last = data[keys[keys.length - 1]];
         const va = last.valorAplicado || 0;
         const sb = last.saldoBruto || 0;
-        lastGanhoCapR = sb - va;
+        const ganhoCapR = sb - va;
+        lastGanhoCapR = ganhoCapR;
         lastGanhoCapPct = va > 0 ? (lastGanhoCapR / va) * 100 : 0;
         lastYield = (last.valorFII || 0) > 0 ? ((last.dividendosFII || 0) / (last.valorFII || 1)) * 100 : 0;
 
-        if (keys.length > 1) {
-            let totalProvPrev = 0;
-            for (let i = 0; i < keys.length - 1; i++) {
-                totalProvPrev += (data[keys[i]]?.dividendos || 0);
-            }
-            if (lastGanhoCapR !== 0) {
-                lastPerformance = (lastGanhoCapR - (sb - totalProvPrev)) / lastGanhoCapR * 100;
-            }
+        // Performance: (Ganho de Capital + Total de Proventos) / Saldo Bruto
+        if (sb > 0) {
+            lastPerformance = ((ganhoCapR + totalProventos) / sb) * 100;
         }
     }
 
@@ -555,14 +548,14 @@ function renderProventosTable(data) {
         const ganhoPct = va > 0 ? (ganhoR / va) * 100 : 0;
         const yieldFII = valFII > 0 ? (divFII / valFII) * 100 : 0;
 
-        // Growth rate
+        // Δ: variação do saldo bruto em relação ao mês anterior
         let deltaR = '—';
         let deltaPct = '—';
         if (idx > 0) {
-            const prevDiv = data[keys[idx - 1]]?.dividendos || 0;
-            const dr = div - prevDiv;
+            const prevSB = data[keys[idx - 1]]?.saldoBruto || 0;
+            const dr = sb - prevSB;
             deltaR = formatCurrency(dr);
-            deltaPct = prevDiv > 0 ? formatPercent((dr / prevDiv) * 100) : '—';
+            deltaPct = prevSB > 0 ? formatPercent((dr / prevSB) * 100) : '—';
         }
 
         return `<tr>
@@ -574,8 +567,8 @@ function renderProventosTable(data) {
             <td class="${ganhoR >= 0 ? 'positive' : 'negative'}">${formatCurrency(ganhoR)}</td>
             <td class="${ganhoPct >= 0 ? 'positive' : 'negative'}">${formatPercent(ganhoPct)}</td>
             <td>${formatPercent(yieldFII)}</td>
-            <td>${deltaR}</td>
-            <td>${deltaPct}</td>
+            <td class="${idx > 0 ? (sb - (data[keys[idx-1]]?.saldoBruto||0) >= 0 ? 'positive' : 'negative') : ''}">${deltaR}</td>
+            <td class="${idx > 0 ? (sb - (data[keys[idx-1]]?.saldoBruto||0) >= 0 ? 'positive' : 'negative') : ''}">${deltaPct}</td>
             <td>
                 <button class="btn-icon btn-edit" onclick="editProventosMonth(${d.year}, ${d.month})" title="Editar">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10.5V12H3.5L10.2 5.3L8.7 3.8L2 10.5ZM11.8 3.7C12 3.5 12 3.2 11.8 3L11 2.2C10.8 2 10.5 2 10.3 2.2L9.5 3L11 4.5L11.8 3.7Z" fill="currentColor"/></svg>
