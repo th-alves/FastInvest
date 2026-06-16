@@ -149,6 +149,7 @@ function switchTab(tabName) {
     if (tabName === 'kraken') renderKraken();
     if (tabName === 'proventos') renderProventos();
     if (tabName === 'aporte') renderAporte();
+    if (tabName === 'calc') { calcLoadState(); calcAll(); }
 }
 
 function updateTabIndicator() {
@@ -1170,6 +1171,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'k' || e.key === 'K') switchTab('kraken');
         if (e.key === 'p' || e.key === 'P') switchTab('proventos');
         if (e.key === 'a' || e.key === 'A') switchTab('aporte');
+        if (e.key === 'c' || e.key === 'C') switchTab('calc');
     });
 });
 
@@ -1333,3 +1335,128 @@ function showConfirmModal(message, onConfirm) {
     document.getElementById('confirmModalOk').onclick = () => { modal.style.display = 'none'; onConfirm(); };
     modal.style.display = 'flex';
 }
+
+// ============================================================
+// TAB 4: CALCULADORAS DE PREÇO TETO
+// ============================================================
+
+function parseBR(str) {
+    if (!str) return null;
+    const v = parseFloat(String(str).replace(/\./g, '').replace(',', '.'));
+    return isNaN(v) || v <= 0 ? null : v;
+}
+
+function calcSaveState() {
+    const fields = ['calcTicker','calcPreco','calcDPA','calcLPA','calcVPA','calcCrescimento','calcRetorno','calcG','calcPLSetor'];
+    const state = {};
+    fields.forEach(id => { state[id] = document.getElementById(id)?.value || ''; });
+    saveData('byfinance_calc', state);
+}
+
+function calcLoadState() {
+    const state = loadData('byfinance_calc', {});
+    Object.entries(state).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    });
+}
+
+function calcAll() {
+    const preco    = parseBR(document.getElementById('calcPreco')?.value);
+    const dpa      = parseBR(document.getElementById('calcDPA')?.value);
+    const lpa      = parseBR(document.getElementById('calcLPA')?.value);
+    const vpa      = parseBR(document.getElementById('calcVPA')?.value);
+    const cresc    = parseBR(document.getElementById('calcCrescimento')?.value);
+    const retorno  = parseBR(document.getElementById('calcRetorno')?.value) || 6;
+    const g        = parseBR(document.getElementById('calcG')?.value) || 3;
+    const plSetor  = parseBR(document.getElementById('calcPLSetor')?.value);
+
+    const results = [];
+
+    // Bazin: DPA / (retorno/100)
+    if (dpa) {
+        const teto = dpa / (retorno / 100);
+        results.push({ metodo: 'Bazin', teto, nota: `DPA ÷ ${retorno}%` });
+    }
+
+    // Graham: √(22.5 × LPA × VPA)
+    if (lpa && vpa && lpa * vpa > 0) {
+        const teto = Math.sqrt(22.5 * lpa * vpa);
+        results.push({ metodo: 'Graham', teto, nota: '√(22,5 × LPA × VPA)' });
+    }
+
+    // Peter Lynch: preço justo quando PEG = 1 → Preço = LPA × crescimento
+    if (lpa && cresc) {
+        const teto = lpa * cresc;
+        const peg = preco ? (preco / lpa) / cresc : null;
+        results.push({ metodo: 'Peter Lynch', teto, nota: peg ? `PEG atual: ${peg.toFixed(2)}` : 'LPA × crescimento' });
+    }
+
+    // Gordon DDM: DPA / (k - g), só se k > g
+    if (dpa && retorno > g) {
+        const teto = dpa / ((retorno - g) / 100);
+        results.push({ metodo: 'Gordon (DDM)', teto, nota: `DPA ÷ (${retorno}% − ${g}%)` });
+    }
+
+    // P/L Justo: LPA × P/L setorial
+    if (lpa && plSetor) {
+        const teto = lpa * plSetor;
+        results.push({ metodo: 'P/L Justo', teto, nota: `LPA × P/L ${plSetor}` });
+    }
+
+    const empty = document.getElementById('calcEmpty');
+    const table = document.getElementById('calcResultsTable');
+
+    if (results.length === 0) {
+        empty.style.display = 'flex';
+        table.style.display = 'none';
+        return;
+    }
+    empty.style.display = 'none';
+    table.style.display = '';
+
+    const tbody = document.getElementById('calcTableBody');
+    tbody.innerHTML = results.map(r => {
+        const margem = preco ? ((r.teto - preco) / preco) * 100 : null;
+        const { cls, label } = calcVeredito(r.teto, preco);
+        return `<tr>
+            <td><span class="calc-method-tag">${r.metodo}</span><br><span class="calc-nota">${r.nota}</span></td>
+            <td class="positive"><strong>${formatCurrency(r.teto)}</strong></td>
+            <td>${preco ? formatCurrency(preco) : '—'}</td>
+            <td class="${margem !== null ? (margem >= 0 ? 'positive' : 'negative') : ''}">
+                ${margem !== null ? (margem >= 0 ? '+' : '') + margem.toFixed(1) + '% de margem' : '—'}
+            </td>
+            <td><span class="calc-veredito ${cls}">${label}</span></td>
+        </tr>`;
+    }).join('');
+
+    // Média dos métodos
+    const media = results.reduce((s, r) => s + r.teto, 0) / results.length;
+    const margemMedia = preco ? ((media - preco) / preco) * 100 : null;
+    const { cls: clsM, label: labelM } = calcVeredito(media, preco);
+    document.getElementById('calcAverageCard').innerHTML = `
+        <div class="calc-average-inner">
+            <div>
+                <span class="calc-average-label">Média dos ${results.length} métodos</span>
+                <span class="calc-average-value positive">${formatCurrency(media)}</span>
+            </div>
+            <div>
+                <span class="calc-average-label">Margem média</span>
+                <span class="calc-average-value ${margemMedia !== null ? (margemMedia >= 0 ? 'positive' : 'negative') : ''}">
+                    ${margemMedia !== null ? (margemMedia >= 0 ? '+' : '') + margemMedia.toFixed(1) + '%' : '—'}
+                </span>
+            </div>
+            <span class="calc-veredito ${clsM} calc-veredito-lg">${labelM}</span>
+        </div>`;
+}
+
+function calcVeredito(teto, preco) {
+    if (!preco) return { cls: 'veredito-neutral', label: '—' };
+    const diff = ((teto - preco) / preco) * 100;
+    if (diff >= 20)  return { cls: 'veredito-buy',     label: '✓ Compra' };
+    if (diff >= 0)   return { cls: 'veredito-watch',   label: '◎ Atenção' };
+    return              { cls: 'veredito-sell',    label: '✕ Caro' };
+}
+
+// Carregar estado salvo ao entrar na aba
+const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
