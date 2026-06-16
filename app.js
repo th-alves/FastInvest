@@ -236,6 +236,7 @@ function saveKrakenData() {
     const data = getKrakenData();
     data.dividendGoal = parseCurrencyInput(document.getElementById('dividendGoal').value);
     data.patrimonioTotal = parseCurrencyInput(document.getElementById('patrimonioTotal').value);
+    data.projecaoMeta = parseCurrencyInput(document.getElementById('projecaoMeta').value) || 50000;
 
     KRAKEN_CATEGORIES.forEach(cat => {
         const applied = document.getElementById(`kraken_applied_${cat.key}`);
@@ -266,6 +267,12 @@ function renderKraken() {
         goalInput.value = data.dividendGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     } else {
         goalInput.value = '';
+    }
+    const projecaoInput = document.getElementById('projecaoMeta');
+    if (data.projecaoMeta > 0) {
+        projecaoInput.value = data.projecaoMeta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+        projecaoInput.value = '';
     }
 
     // Set patrimonio total
@@ -500,6 +507,9 @@ function updateProventosSummary(data) {
     document.getElementById('proventosCapitalGainPct').textContent = formatPercent(lastGanhoCapPct);
     document.getElementById('lastYieldFII').textContent = formatPercent(lastYield);
     document.getElementById('lastPerformance').textContent = formatPercent(lastPerformance);
+
+    updateGoalBar(totalProventos);
+    updateProjectionAndYoY(data);
 }
 
 function renderProventosTable(data) {
@@ -554,8 +564,9 @@ function renderProventosTable(data) {
         if (idx > 0) {
             const prevSB = data[keys[idx - 1]]?.saldoBruto || 0;
             const dr = sb - prevSB;
-            deltaR = formatCurrency(dr);
-            deltaPct = prevSB > 0 ? formatPercent((dr / prevSB) * 100) : '—';
+            const arrow = dr >= 0 ? ' ↑' : ' ↓';
+            deltaR = formatCurrency(dr) + arrow;
+            deltaPct = prevSB > 0 ? formatPercent((dr / prevSB) * 100) + arrow : '—';
         }
 
         return `<tr>
@@ -588,13 +599,14 @@ function editProventosMonth(year, month) {
 }
 
 function deleteProventosMonth(key) {
-    if (!confirm('Deseja realmente excluir os dados deste mês?')) return;
-    const data = getProventosData();
-    delete data[key];
-    saveData('byfinance_proventos', data);
-    renderProventos();
-    renderAporte();
-    showToast('Dados do mês removidos', 'info');
+    showConfirmModal('Deseja realmente excluir os dados deste mês?', () => {
+        const data = getProventosData();
+        delete data[key];
+        saveData('byfinance_proventos', data);
+        renderProventos();
+        renderAporte();
+        showToast('Dados do mês removidos', 'info');
+    });
 }
 
 // ===================== PIE CHART (Canvas) =====================
@@ -971,12 +983,13 @@ function editAporteMonth(year, month) {
 }
 
 function deleteAporteMonth(key) {
-    if (!confirm('Deseja realmente excluir este aporte?')) return;
-    const data = getAporteData();
-    delete data[key];
-    saveData('byfinance_aportes', data);
-    renderAporte();
-    showToast('Aporte removido', 'info');
+    showConfirmModal('Deseja realmente excluir este aporte?', () => {
+        const data = getAporteData();
+        delete data[key];
+        saveData('byfinance_aportes', data);
+        renderAporte();
+        showToast('Aporte removido', 'info');
+    });
 }
 
 // ============================================================
@@ -1151,13 +1164,13 @@ window.addEventListener('DOMContentLoaded', () => {
     initParticles();
     initMouseGlow();
 
-    // Sempre mostrar a landing page primeiro (removido auto-enter do dashboard)
-    // const hasData = localStorage.getItem('byfinance_kraken') ||
-    //                 localStorage.getItem('byfinance_proventos') ||
-    //                 localStorage.getItem('byfinance_aportes');
-    // if (hasData) {
-    //     enterDashboard();
-    // }
+    // Keyboard shortcuts: K, P, A to switch tabs
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'k' || e.key === 'K') switchTab('kraken');
+        if (e.key === 'p' || e.key === 'P') switchTab('proventos');
+        if (e.key === 'a' || e.key === 'A') switchTab('aporte');
+    });
 });
 
 // ============================================================
@@ -1210,4 +1223,113 @@ function updateThemeMeta(theme) {
     if (meta) {
         meta.setAttribute('content', theme === 'light' ? '#FEF7ED' : '#0A0A0A');
     }
+}
+
+// ============================================================
+// META DE DIVIDENDOS + PROJEÇÃO + YoY + MELHOR MÊS + CONFIRM DELETE
+// ============================================================
+
+function updateGoalBar(totalProventos) {
+    const krakenData = getKrakenData();
+    const goal = Number(krakenData.dividendGoal) || 0;
+    const wrap = document.getElementById('goalBarWrap');
+    if (!wrap) return;
+    if (goal <= 0) { wrap.style.display = 'none'; return; }
+
+    // Lógica: quantos dos últimos 6 meses bateram a meta?
+    const data = getProventosData();
+    const keys = Object.keys(data).sort();
+    const recent = keys.slice(-6);
+    const bateram = recent.filter(k => (data[k].dividendos || 0) >= goal).length;
+    const total = recent.length;
+    const lastDiv = total > 0 ? (data[recent[recent.length - 1]].dividendos || 0) : 0;
+    const pctBarra = Math.min((lastDiv / goal) * 100, 100);
+    const metaConcluida = total >= 6 && bateram === total;
+
+    wrap.style.display = '';
+    document.getElementById('goalBarFill').style.width = pctBarra.toFixed(1) + '%';
+    document.getElementById('goalBarFill').style.background = metaConcluida ? '#22c55e' : 'var(--primary-gradient)';
+
+    const lastFormatted = formatCurrency(lastDiv) + ' / ' + formatCurrency(goal);
+    const streak = metaConcluida
+        ? '🎯 Meta atingida! ' + bateram + '/' + total + ' meses'
+        : bateram + '/' + total + ' meses acima de ' + formatCurrency(goal);
+    document.getElementById('goalBarLabel').textContent = lastFormatted + ' — ' + streak;
+}
+
+function updateProjectionAndYoY(data) {
+    const keys = Object.keys(data).sort();
+    const row = document.getElementById('projectionRow');
+    if (!row || keys.length < 2) { if (row) row.style.display = 'none'; return; }
+    row.style.display = '';
+
+    // Projeção: média de aportes dos últimos 3 meses * meses restantes até meta patrimonial
+    const krakenData = getKrakenData();
+    const patrimonioAtual = krakenData.patrimonioTotal || 0;
+    const last = data[keys[keys.length - 1]];
+    const recentKeys = keys.slice(-3);
+    const avgAporte = recentKeys.reduce((sum, k) => {
+        const aporteData = getAporteData();
+        return sum + (aporteData[k]?.valor || 0);
+    }, 0) / recentKeys.length;
+    const avgRendimento = recentKeys.reduce((sum, k) => {
+        const d = data[k];
+        return sum + ((d.saldoBruto - d.valorAplicado) / (d.valorAplicado || 1));
+    }, 0) / recentKeys.length;
+    const META = Number(krakenData.projecaoMeta) || 50000;
+    let proj = patrimonioAtual;
+    let meses = 0;
+    while (proj < META && meses < 600) { proj = proj * (1 + avgRendimento) + avgAporte; meses++; }
+    const projEl = document.getElementById('projectionValue');
+    const projSub = document.getElementById('projectionMonths');
+    if (meses < 600 && avgAporte > 0) {
+        projEl.textContent = meses + ' meses';
+        projSub.textContent = 'para ' + formatCurrency(META) + ' (aporte médio ' + formatCurrency(avgAporte) + '/mês)';
+    } else {
+        projEl.textContent = '—';
+        projSub.textContent = 'Registre mais aportes para projetar';
+    }
+
+    // YoY: dividendos do mês atual vs mesmo mês do ano anterior
+    const cur = keys[keys.length - 1];
+    const curData = data[cur];
+    const yoyKey = monthKey(curData.year - 1, curData.month);
+    const yoyData = data[yoyKey];
+    const yoyEl = document.getElementById('yoyDividendos');
+    const yoyPct = document.getElementById('yoyDividendosPct');
+    if (yoyData) {
+        const diff = curData.dividendos - yoyData.dividendos;
+        const pct = yoyData.dividendos > 0 ? (diff / yoyData.dividendos) * 100 : 0;
+        yoyEl.textContent = formatCurrency(curData.dividendos) + ' vs ' + formatCurrency(yoyData.dividendos);
+        yoyEl.className = 'stat-value ' + (diff >= 0 ? 'positive' : 'negative');
+        yoyPct.textContent = (diff >= 0 ? '+' : '') + pct.toFixed(1) + '% em relação a ' + monthLabelShort(yoyData.year, yoyData.month);
+        yoyPct.className = 'stat-sub ' + (diff >= 0 ? 'positive' : 'negative');
+    } else {
+        yoyEl.textContent = '—';
+        yoyEl.className = 'stat-value';
+        yoyPct.textContent = 'Sem dados do mesmo mês no ano anterior';
+        yoyPct.className = 'stat-sub';
+    }
+}
+
+function showConfirmModal(message, onConfirm) {
+    let modal = document.getElementById('confirmModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'confirmModal';
+        modal.className = 'confirm-modal-overlay';
+        modal.innerHTML = `
+            <div class="confirm-modal">
+                <p class="confirm-modal-msg" id="confirmModalMsg"></p>
+                <div class="confirm-modal-actions">
+                    <button class="btn-secondary" onclick="document.getElementById('confirmModal').style.display='none'">Cancelar</button>
+                    <button class="btn-danger" id="confirmModalOk">Excluir</button>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+    }
+    document.getElementById('confirmModalMsg').textContent = message;
+    document.getElementById('confirmModalOk').onclick = () => { modal.style.display = 'none'; onConfirm(); };
+    modal.style.display = 'flex';
 }
