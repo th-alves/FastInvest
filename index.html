@@ -558,12 +558,12 @@
                             <span class="calc-section-title">Identificação</span>
                             <div class="calc-row">
                                 <div class="calc-input-group">
-                                    <label class="calc-label">Ticker</label>
+                                    <label class="calc-label">Ticker <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Código do ativo na bolsa. Ex: MXRF11 para FIIs, BBAS3 para ações.</span></span></label>
                                     <input type="text" id="calcTicker" class="input-field" placeholder="ex: MXRF11" oninput="calcSaveState(); calcAll()" style="text-transform:uppercase">
                                 </div>
                                 <div class="calc-input-group">
-                                    <label class="calc-label">Preço Atual (R$)</label>
-                                    <input type="text" id="calcPreco" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                    <label class="calc-label">Preço Atual (R$) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Cotação atual do ativo no mercado. Use o valor em tempo real da sua corretora ou do Investidor10.</span></span></label>
+                                    <input type="text" id="calcPreco" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -573,16 +573,16 @@
                             <span class="calc-section-title">Dados por Ação</span>
                             <div class="calc-row calc-row-3">
                                 <div class="calc-input-group">
-                                    <label class="calc-label">DPA — Div. por Ação 12M (R$)</label>
-                                    <input type="text" id="calcDPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                    <label class="calc-label">DPA <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Dividendo Por Ação — soma de todos os proventos pagos por cota/ação nos últimos 12 meses. Encontre no Investidor10 ou no relatório do fundo.</span></span></label>
+                                    <input type="text" id="calcDPA" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
-                                    <label class="calc-label">LPA — Lucro por Ação (R$)</label>
-                                    <input type="text" id="calcLPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                    <label class="calc-label">LPA <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Lucro Por Ação — lucro líquido da empresa dividido pelo número de ações. Disponível nos resultados trimestrais ou no Fundamentus.</span></span></label>
+                                    <input type="text" id="calcLPA" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
-                                    <label class="calc-label">VPA — Val. Patrimonial por Ação (R$)</label>
-                                    <input type="text" id="calcVPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                    <label class="calc-label">VPA <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Valor Patrimonial Por Ação — patrimônio líquido dividido pelo número de ações. Indica quanto "vale" cada ação pelo balanço contábil da empresa.</span></span></label>
+                                    <input type="text" id="calcVPA" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -592,19 +592,19 @@
                             <span class="calc-section-title">Taxas e Parâmetros</span>
                             <div class="calc-row calc-row-4">
                                 <div class="calc-input-group">
-                                    <label class="calc-label">Crescimento LPA anual (%)</label>
+                                    <label class="calc-label">Crescimento LPA (%) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Taxa anual de crescimento do lucro por ação. Usado no método de Peter Lynch para calcular o PEG Ratio. Uma estimativa comum é usar a média dos últimos 3-5 anos.</span></span></label>
                                     <input type="text" id="calcCrescimento" class="input-field" placeholder="0,0" oninput="calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
-                                    <label class="calc-label">Retorno mín. / k Gordon (%)</label>
+                                    <label class="calc-label">Retorno mín. / k (%) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">No Bazin: retorno mínimo aceitável em dividendos (padrão 6%). No Gordon: taxa de retorno exigida pelo investidor (k). Quanto maior, mais conservador o preço teto.</span></span></label>
                                     <input type="text" id="calcRetorno" class="input-field" placeholder="6,0" oninput="calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
-                                    <label class="calc-label">Crescimento dividendos g (%)</label>
+                                    <label class="calc-label">Crescimento div. g (%) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Usado no modelo de Gordon (DDM). É a taxa anual esperada de crescimento dos dividendos. Precisa ser menor que o retorno exigido (k) para o cálculo funcionar.</span></span></label>
                                     <input type="text" id="calcG" class="input-field" placeholder="3,0" oninput="calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
-                                    <label class="calc-label">P/L Setorial (P/L Justo)</label>
+                                    <label class="calc-label">P/L Setorial <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon">?</span><span class="calc-tooltip-box">Preço/Lucro médio do setor em que a empresa atua. Use como referência o P/L histórico do setor. Ex: bancos costumam ter P/L entre 6-10, varejo entre 15-25.</span></span></label>
                                     <input type="text" id="calcPLSetor" class="input-field" placeholder="ex: 10" oninput="calcSaveState(); calcAll()">
                                 </div>
                             </div>
@@ -631,35 +631,6 @@
                                 <tbody id="calcTableBody"></tbody>
                             </table>
                             <div class="calc-average-card" id="calcAverageCard"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Legenda dos métodos -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Sobre os Métodos</h3>
-                    </div>
-                    <div class="calc-methods-info">
-                        <div class="calc-method-info-item">
-                            <span class="calc-method-name">Bazin</span>
-                            <span class="calc-method-desc">Focado em renda. Preço teto = DPA ÷ retorno mínimo. Ideal para FIIs e ações que pagam dividendos consistentes.</span>
-                        </div>
-                        <div class="calc-method-info-item">
-                            <span class="calc-method-name">Graham</span>
-                            <span class="calc-method-desc">Valor intrínseco = √(22,5 × LPA × VPA). Criado para encontrar ações baratas com sólida base patrimonial.</span>
-                        </div>
-                        <div class="calc-method-info-item">
-                            <span class="calc-method-name">Peter Lynch</span>
-                            <span class="calc-method-desc">PEG Ratio = P/L ÷ crescimento do LPA. Ação está barata quando PEG &lt; 1, cara quando PEG &gt; 2.</span>
-                        </div>
-                        <div class="calc-method-info-item">
-                            <span class="calc-method-name">Gordon (DDM)</span>
-                            <span class="calc-method-desc">Preço justo = DPA ÷ (k − g). Modela o valor presente dos dividendos futuros com crescimento constante.</span>
-                        </div>
-                        <div class="calc-method-info-item">
-                            <span class="calc-method-name">P/L Justo</span>
-                            <span class="calc-method-desc">Preço teto = LPA × P/L médio do setor. Simples e direto, bom para comparar com empresas do mesmo segmento.</span>
                         </div>
                     </div>
                 </div>

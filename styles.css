@@ -2712,6 +2712,9 @@ ul, ol { list-style: none; }
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .calc-results {
@@ -2829,3 +2832,77 @@ ul, ol { list-style: none; }
   .calc-average-inner { gap: var(--space-md); }
   .calc-method-info-item { flex-direction: column; gap: 4px; }
 }
+
+/* ── Calc Tooltips ───────────────────────────────────────── */
+.calc-method-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.calc-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.calc-tooltip-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  flex-shrink: 0;
+  transition: background var(--duration-base) var(--ease-out);
+  line-height: 1;
+}
+
+.calc-tooltip-wrap:hover .calc-tooltip-icon {
+  background: var(--primary);
+  color: var(--primary-btn-text);
+}
+
+.calc-tooltip-box {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  transform: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-secondary, var(--text-muted));
+  line-height: 1.5;
+  width: 240px;
+  white-space: normal;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+  z-index: 100;
+}
+
+.calc-tooltip-box::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 12px;
+  border: 5px solid transparent;
+  border-bottom-color: var(--border-subtle);
+}
+
+.calc-tooltip-wrap:hover .calc-tooltip-box {
+  opacity: 1;
+}
+
+/* Remove old methods info CSS (now unused) */
+.calc-methods-info,
+.calc-method-info-item,
+.calc-method-name,
+.calc-method-desc { display: none; }

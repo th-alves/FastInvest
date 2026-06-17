@@ -1341,8 +1341,12 @@ function showConfirmModal(message, onConfirm) {
 // ============================================================
 
 function parseBR(str) {
-    if (!str) return null;
-    const v = parseFloat(String(str).replace(/\./g, '').replace(',', '.'));
+    if (!str && str !== 0) return null;
+    const s = String(str).trim();
+    if (s === '') return null;
+    // Remove thousand separators (dots when followed by 3 digits) then normalize decimal
+    let normalized = s.replace(/\.(?=\d{3}(?:[,.]|$))/g, '').replace(',', '.');
+    const v = parseFloat(normalized);
     return isNaN(v) || v <= 0 ? null : v;
 }
 
@@ -1415,12 +1419,30 @@ function calcAll() {
     empty.style.display = 'none';
     table.style.display = '';
 
+    const metodoInfo = {
+        'Bazin': 'Focado em renda. Preço teto = DPA ÷ retorno mínimo. Ideal para FIIs e ações com dividendos consistentes.',
+        'Graham': 'Valor intrínseco = √(22,5 × LPA × VPA). Busca ações baratas com sólida base patrimonial.',
+        'Peter Lynch': 'PEG Ratio = P/L ÷ crescimento do LPA. Barato quando PEG < 1, caro quando PEG > 2.',
+        'Gordon (DDM)': 'Preço justo = DPA ÷ (k − g). Modela o valor presente dos dividendos futuros com crescimento constante.',
+        'P/L Justo': 'Preço teto = LPA × P/L médio do setor. Bom para comparar empresas do mesmo segmento.'
+    };
+
     const tbody = document.getElementById('calcTableBody');
     tbody.innerHTML = results.map(r => {
         const margem = preco ? ((r.teto - preco) / preco) * 100 : null;
         const { cls, label } = calcVeredito(r.teto, preco);
+        const tooltip = metodoInfo[r.metodo] || '';
         return `<tr>
-            <td><span class="calc-method-tag">${r.metodo}</span><br><span class="calc-nota">${r.nota}</span></td>
+            <td>
+                <div class="calc-method-cell">
+                    <span class="calc-method-tag">${r.metodo}</span>
+                    <span class="calc-tooltip-wrap">
+                        <span class="calc-tooltip-icon">?</span>
+                        <span class="calc-tooltip-box">${tooltip}</span>
+                    </span>
+                </div>
+                <span class="calc-nota">${r.nota}</span>
+            </td>
             <td class="positive"><strong>${formatCurrency(r.teto)}</strong></td>
             <td>${preco ? formatCurrency(preco) : '—'}</td>
             <td class="${margem !== null ? (margem >= 0 ? 'positive' : 'negative') : ''}">
