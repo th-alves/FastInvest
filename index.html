@@ -551,43 +551,63 @@
                         <h3 class="card-title">Calculadoras de Preço Teto</h3>
                     </div>
 
-                    <!-- Inputs comuns -->
+                    <!-- Inputs organizados por seção -->
                     <div class="calc-common-inputs">
-                        <div class="calc-input-group">
-                            <label class="calc-label">Ticker</label>
-                            <input type="text" id="calcTicker" class="input-field" placeholder="ex: MXRF11" oninput="calcSaveState(); calcAll()" style="text-transform:uppercase">
+                        <!-- Linha 1: Identificação -->
+                        <div class="calc-section">
+                            <span class="calc-section-title">Identificação</span>
+                            <div class="calc-row">
+                                <div class="calc-input-group">
+                                    <label class="calc-label">Ticker</label>
+                                    <input type="text" id="calcTicker" class="input-field" placeholder="ex: MXRF11" oninput="calcSaveState(); calcAll()" style="text-transform:uppercase">
+                                </div>
+                                <div class="calc-input-group">
+                                    <label class="calc-label">Preço Atual (R$)</label>
+                                    <input type="text" id="calcPreco" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                </div>
+                            </div>
                         </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">Preço Atual (R$)</label>
-                            <input type="text" id="calcPreco" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+
+                        <!-- Linha 2: Dados por Ação -->
+                        <div class="calc-section">
+                            <span class="calc-section-title">Dados por Ação</span>
+                            <div class="calc-row calc-row-3">
+                                <div class="calc-input-group">
+                                    <label class="calc-label">DPA — Div. por Ação 12M (R$)</label>
+                                    <input type="text" id="calcDPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                </div>
+                                <div class="calc-input-group">
+                                    <label class="calc-label">LPA — Lucro por Ação (R$)</label>
+                                    <input type="text" id="calcLPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                </div>
+                                <div class="calc-input-group">
+                                    <label class="calc-label">VPA — Val. Patrimonial por Ação (R$)</label>
+                                    <input type="text" id="calcVPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
+                                </div>
+                            </div>
                         </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">DPA — Div. por Ação 12M (R$)</label>
-                            <input type="text" id="calcDPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
-                        </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">LPA — Lucro por Ação (R$)</label>
-                            <input type="text" id="calcLPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
-                        </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">VPA — Val. Patrimonial por Ação (R$)</label>
-                            <input type="text" id="calcVPA" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this); calcSaveState(); calcAll()">
-                        </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">Crescimento LPA anual (%)</label>
-                            <input type="text" id="calcCrescimento" class="input-field" placeholder="0,0" oninput="calcSaveState(); calcAll()">
-                        </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">Retorno mín. Bazin / k Gordon (%)</label>
-                            <input type="text" id="calcRetorno" class="input-field" placeholder="6,0" oninput="calcSaveState(); calcAll()">
-                        </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">Crescimento dividendos g Gordon (%)</label>
-                            <input type="text" id="calcG" class="input-field" placeholder="3,0" oninput="calcSaveState(); calcAll()">
-                        </div>
-                        <div class="calc-input-group">
-                            <label class="calc-label">P/L Setorial (P/L Justo)</label>
-                            <input type="text" id="calcPLSetor" class="input-field" placeholder="ex: 10" oninput="calcSaveState(); calcAll()">
+
+                        <!-- Linha 3: Taxas e Parâmetros -->
+                        <div class="calc-section">
+                            <span class="calc-section-title">Taxas e Parâmetros</span>
+                            <div class="calc-row calc-row-4">
+                                <div class="calc-input-group">
+                                    <label class="calc-label">Crescimento LPA anual (%)</label>
+                                    <input type="text" id="calcCrescimento" class="input-field" placeholder="0,0" oninput="calcSaveState(); calcAll()">
+                                </div>
+                                <div class="calc-input-group">
+                                    <label class="calc-label">Retorno mín. / k Gordon (%)</label>
+                                    <input type="text" id="calcRetorno" class="input-field" placeholder="6,0" oninput="calcSaveState(); calcAll()">
+                                </div>
+                                <div class="calc-input-group">
+                                    <label class="calc-label">Crescimento dividendos g (%)</label>
+                                    <input type="text" id="calcG" class="input-field" placeholder="3,0" oninput="calcSaveState(); calcAll()">
+                                </div>
+                                <div class="calc-input-group">
+                                    <label class="calc-label">P/L Setorial (P/L Justo)</label>
+                                    <input type="text" id="calcPLSetor" class="input-field" placeholder="ex: 10" oninput="calcSaveState(); calcAll()">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
