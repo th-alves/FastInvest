@@ -35,6 +35,7 @@ let currentProventosMonth = { year: new Date().getFullYear(), month: new Date().
 let currentAporteMonth = { year: new Date().getFullYear(), month: new Date().getMonth() };
 let currentBarMode = 'dividendos';
 let currentProventosFilter = 'all';
+let currentCalcType = null; // 'fii' | 'acao'
 
 // ===================== STORAGE HELPERS =====================
 function loadData(key, fallback) {
@@ -1350,101 +1351,111 @@ function parseBR(str) {
     return isNaN(v) || v <= 0 ? null : v;
 }
 
+function setCalcType(type) {
+    currentCalcType = type;
+    document.querySelectorAll('.calc-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+    });
+    const fiiPanel  = document.getElementById('calcInputsFII');
+    const acaoPanel = document.getElementById('calcInputsAcao');
+    if (fiiPanel)  fiiPanel.style.display  = type === 'fii'  ? '' : 'none';
+    if (acaoPanel) acaoPanel.style.display = type === 'acao' ? '' : 'none';
+    calcSaveState();
+    calcAll();
+}
+
 function calcSaveState() {
-    const fields = ['calcTicker','calcPreco','calcDPA','calcLPA','calcVPA','calcCrescimento','calcRetorno','calcG','calcPLSetor'];
-    const state = {};
-    fields.forEach(id => { state[id] = document.getElementById(id)?.value || ''; });
+    const fields = ['calcTicker','calcPreco','calcDPA','calcRetorno','calcG',
+                    'calcTickerAcao','calcPrecoAcao','calcLPA','calcVPA','calcCrescimento','calcPLSetor'];
+    const state = { type: currentCalcType };
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) state[id] = el.value || '';
+    });
     saveData('byfinance_calc', state);
 }
 
 function calcLoadState() {
     const state = loadData('byfinance_calc', {});
-    Object.entries(state).forEach(([id, val]) => {
+    const fields = ['calcTicker','calcPreco','calcDPA','calcRetorno','calcG',
+                    'calcTickerAcao','calcPrecoAcao','calcLPA','calcVPA','calcCrescimento','calcPLSetor'];
+    fields.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.value = val;
+        if (el && state[id] !== undefined) el.value = state[id];
     });
+    if (state.type) setCalcType(state.type);
 }
 
 function calcAll() {
-    const preco    = parseBR(document.getElementById('calcPreco')?.value);
-    const dpa      = parseBR(document.getElementById('calcDPA')?.value);
-    const lpa      = parseBR(document.getElementById('calcLPA')?.value);
-    const vpa      = parseBR(document.getElementById('calcVPA')?.value);
-    const cresc    = parseBR(document.getElementById('calcCrescimento')?.value);
-    const retorno  = parseBR(document.getElementById('calcRetorno')?.value) || 6;
-    const g        = parseBR(document.getElementById('calcG')?.value) || 3;
-    const plSetor  = parseBR(document.getElementById('calcPLSetor')?.value);
-
-    const results = [];
-
-    // Bazin: DPA / (retorno/100)
-    if (dpa) {
-        const teto = dpa / (retorno / 100);
-        results.push({ metodo: 'Bazin', teto, nota: `DPA ÷ ${retorno}%` });
-    }
-
-    // Graham: √(22.5 × LPA × VPA)
-    if (lpa && vpa && lpa * vpa > 0) {
-        const teto = Math.sqrt(22.5 * lpa * vpa);
-        results.push({ metodo: 'Graham', teto, nota: '√(22,5 × LPA × VPA)' });
-    }
-
-    // Peter Lynch: preço justo quando PEG = 1 → Preço = LPA × crescimento
-    if (lpa && cresc) {
-        const teto = lpa * cresc;
-        const peg = preco ? (preco / lpa) / cresc : null;
-        results.push({ metodo: 'Peter Lynch', teto, nota: peg ? `PEG atual: ${peg.toFixed(2)}` : 'LPA × crescimento' });
-    }
-
-    // Gordon DDM: DPA / (k - g), só se k > g
-    if (dpa && retorno > g) {
-        const teto = dpa / ((retorno - g) / 100);
-        results.push({ metodo: 'Gordon (DDM)', teto, nota: `DPA ÷ (${retorno}% − ${g}%)` });
-    }
-
-    // P/L Justo: LPA × P/L setorial
-    if (lpa && plSetor) {
-        const teto = lpa * plSetor;
-        results.push({ metodo: 'P/L Justo', teto, nota: `LPA × P/L ${plSetor}` });
-    }
-
     const empty = document.getElementById('calcEmpty');
     const table = document.getElementById('calcResultsTable');
 
-    if (results.length === 0) {
-        empty.style.display = 'flex';
-        table.style.display = 'none';
+    if (!currentCalcType) {
+        if (empty) empty.style.display = 'flex';
+        if (table) table.style.display = 'none';
         return;
     }
-    empty.style.display = 'none';
-    table.style.display = '';
+
+    const results = [];
+
+    if (currentCalcType === 'fii') {
+        const preco   = parseBR(document.getElementById('calcPreco')?.value);
+        const dpa     = parseBR(document.getElementById('calcDPA')?.value);
+        const retorno = parseBR(document.getElementById('calcRetorno')?.value) || 6;
+        const g       = parseBR(document.getElementById('calcG')?.value) || 3;
+        if (dpa)
+            results.push({ metodo: 'Bazin', teto: dpa / (retorno / 100), nota: `DPA ÷ ${retorno}%`, preco });
+        if (dpa && retorno > g)
+            results.push({ metodo: 'Gordon (DDM)', teto: dpa / ((retorno - g) / 100), nota: `DPA ÷ (${retorno}% − ${g}%)`, preco });
+    }
+
+    if (currentCalcType === 'acao') {
+        const preco   = parseBR(document.getElementById('calcPrecoAcao')?.value);
+        const lpa     = parseBR(document.getElementById('calcLPA')?.value);
+        const vpa     = parseBR(document.getElementById('calcVPA')?.value);
+        const cresc   = parseBR(document.getElementById('calcCrescimento')?.value);
+        const plSetor = parseBR(document.getElementById('calcPLSetor')?.value);
+        if (lpa && vpa && lpa * vpa > 0)
+            results.push({ metodo: 'Graham', teto: Math.sqrt(22.5 * lpa * vpa), nota: '√(22,5 × LPA × VPA)', preco });
+        if (lpa && cresc) {
+            const peg = preco ? (preco / lpa) / cresc : null;
+            results.push({ metodo: 'Peter Lynch', teto: lpa * cresc, nota: peg ? `PEG atual: ${peg.toFixed(2)}` : 'LPA × crescimento', preco });
+        }
+        if (lpa && plSetor)
+            results.push({ metodo: 'P/L Justo', teto: lpa * plSetor, nota: `LPA × P/L ${plSetor}`, preco });
+    }
+
+    if (results.length === 0) {
+        if (empty) empty.style.display = 'flex';
+        if (table) table.style.display = 'none';
+        return;
+    }
+    if (empty) empty.style.display = 'none';
+    if (table) table.style.display = '';
 
     const metodoInfo = {
-        'Bazin': 'Focado em renda. Preço teto = DPA ÷ retorno mínimo. Ideal para FIIs e ações com dividendos consistentes.',
-        'Graham': 'Valor intrínseco = √(22,5 × LPA × VPA). Busca ações baratas com sólida base patrimonial.',
-        'Peter Lynch': 'PEG Ratio = P/L ÷ crescimento do LPA. Barato quando PEG < 1, caro quando PEG > 2.',
+        'Bazin':        'Focado em renda. Preço teto = DPA ÷ retorno mínimo. Ideal para FIIs com dividendos consistentes.',
         'Gordon (DDM)': 'Preço justo = DPA ÷ (k − g). Modela o valor presente dos dividendos futuros com crescimento constante.',
-        'P/L Justo': 'Preço teto = LPA × P/L médio do setor. Bom para comparar empresas do mesmo segmento.'
+        'Graham':       'Valor intrínseco = √(22,5 × LPA × VPA). Busca ações baratas com sólida base patrimonial.',
+        'Peter Lynch':  'PEG Ratio = P/L ÷ crescimento do LPA. Barato quando PEG < 1, caro quando PEG > 2.',
+        'P/L Justo':    'Preço teto = LPA × P/L médio do setor. Bom para comparar empresas do mesmo segmento.'
     };
 
     const tbody = document.getElementById('calcTableBody');
     tbody.innerHTML = results.map(r => {
-        const margem = preco ? ((r.teto - preco) / preco) * 100 : null;
-        const { cls, label } = calcVeredito(r.teto, preco);
+        const margem = r.preco ? ((r.teto - r.preco) / r.preco) * 100 : null;
+        const { cls, label } = calcVeredito(r.teto, r.preco);
         const tooltip = metodoInfo[r.metodo] || '';
         return `<tr>
             <td>
                 <div class="calc-method-cell">
                     <span class="calc-method-tag">${r.metodo}</span>
-                    <span class="calc-tooltip-wrap">
-                        <span class="calc-tooltip-icon">?</span>
-                        <span class="calc-tooltip-box">${tooltip}</span>
-                    </span>
+                    <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="${tooltip}">?</span></span>
                 </div>
                 <span class="calc-nota">${r.nota}</span>
             </td>
             <td class="positive"><strong>${formatCurrency(r.teto)}</strong></td>
-            <td>${preco ? formatCurrency(preco) : '—'}</td>
+            <td>${r.preco ? formatCurrency(r.preco) : '—'}</td>
             <td class="${margem !== null ? (margem >= 0 ? 'positive' : 'negative') : ''}">
                 ${margem !== null ? (margem >= 0 ? '+' : '') + margem.toFixed(1) + '% de margem' : '—'}
             </td>
@@ -1452,10 +1463,10 @@ function calcAll() {
         </tr>`;
     }).join('');
 
-    // Média dos métodos
-    const media = results.reduce((s, r) => s + r.teto, 0) / results.length;
-    const margemMedia = preco ? ((media - preco) / preco) * 100 : null;
-    const { cls: clsM, label: labelM } = calcVeredito(media, preco);
+    const precoRef    = results[0].preco;
+    const media       = results.reduce((s, r) => s + r.teto, 0) / results.length;
+    const margemMedia = precoRef ? ((media - precoRef) / precoRef) * 100 : null;
+    const { cls: clsM, label: labelM } = calcVeredito(media, precoRef);
     document.getElementById('calcAverageCard').innerHTML = `
         <div class="calc-average-inner">
             <div>
@@ -1482,3 +1493,70 @@ function calcVeredito(teto, preco) {
 
 // Carregar estado salvo ao entrar na aba
 const _origSwitchTab = typeof switchTab === 'function' ? switchTab : null;
+
+// ============================================================
+// TOOLTIP ENGINE (hover desktop + tap mobile)
+// ============================================================
+
+(function initTooltips() {
+    let activeIcon = null;
+    let box = null;
+
+    function getBox() {
+        if (!box) {
+            box = document.createElement('div');
+            box.className = 'calc-tooltip-box';
+            document.body.appendChild(box);
+        }
+        return box;
+    }
+
+    function show(icon) {
+        const text = icon.dataset.tooltip;
+        if (!text) return;
+        const b = getBox();
+        b.textContent = text;
+        b.classList.add('visible');
+
+        const rect = icon.getBoundingClientRect();
+        const bw = 220;
+        let left = rect.left;
+        let top = rect.bottom + 8;
+
+        // Keep within viewport horizontally
+        if (left + bw > window.innerWidth - 8) left = window.innerWidth - bw - 8;
+        if (left < 8) left = 8;
+
+        // If too close to bottom, flip upward
+        if (top + 120 > window.innerHeight) top = rect.top - 8 - 120;
+
+        b.style.left = left + 'px';
+        b.style.top  = top  + 'px';
+        activeIcon = icon;
+    }
+
+    function hide() {
+        if (box) box.classList.remove('visible');
+        activeIcon = null;
+    }
+
+    document.addEventListener('mouseover', e => {
+        const icon = e.target.closest('.calc-tooltip-icon');
+        if (icon) show(icon);
+    });
+
+    document.addEventListener('mouseout', e => {
+        if (e.target.closest('.calc-tooltip-icon')) hide();
+    });
+
+    document.addEventListener('click', e => {
+        const icon = e.target.closest('.calc-tooltip-icon');
+        if (icon) {
+            e.stopPropagation();
+            if (activeIcon === icon) { hide(); return; }
+            show(icon);
+            return;
+        }
+        hide();
+    });
+})();
