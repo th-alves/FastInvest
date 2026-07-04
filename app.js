@@ -35,7 +35,10 @@ let currentProventosMonth = { year: new Date().getFullYear(), month: new Date().
 let currentAporteMonth = { year: new Date().getFullYear(), month: new Date().getMonth() };
 let currentBarMode = 'dividendos';
 let currentProventosFilter = 'all';
-let currentCalcType = null; // 'fii' | 'acao'
+let currentCalcType = null; // 'fii' | 'acao' | 'gordon'
+let gordonG = 6;             // crescimento esperado dos dividendos (%)
+let gordonPremium = 2;       // prêmio de risco sobre a taxa base (%)
+let gordonBase = 'tesouro';  // 'tesouro' | 'ifix'
 
 // ===================== STORAGE HELPERS =====================
 function loadData(key, fallback) {
@@ -1356,33 +1359,52 @@ function setCalcType(type) {
     document.querySelectorAll('.calc-type-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.type === type);
     });
-    const fiiPanel  = document.getElementById('calcInputsFII');
-    const acaoPanel = document.getElementById('calcInputsAcao');
-    if (fiiPanel)  fiiPanel.style.display  = type === 'fii'  ? '' : 'none';
-    if (acaoPanel) acaoPanel.style.display = type === 'acao' ? '' : 'none';
+    const fiiPanel    = document.getElementById('calcInputsFII');
+    const acaoPanel   = document.getElementById('calcInputsAcao');
+    const gordonPanel = document.getElementById('calcInputsGordon');
+    const resultsWrap = document.getElementById('calcResults');
+    if (fiiPanel)    fiiPanel.style.display    = type === 'fii'    ? '' : 'none';
+    if (acaoPanel)   acaoPanel.style.display   = type === 'acao'   ? '' : 'none';
+    if (gordonPanel) gordonPanel.style.display = type === 'gordon' ? '' : 'none';
+    // A ferramenta Gordon Ajustado tem seus próprios resultados embutidos no widget
+    if (resultsWrap) resultsWrap.style.display = type === 'gordon' ? 'none' : '';
     calcSaveState();
-    calcAll();
+    if (type === 'gordon') { gordonCompute(); } else { calcAll(); }
 }
 
 function calcSaveState() {
     const fields = ['calcTicker','calcPreco','calcDPA','calcRetorno','calcG',
-                    'calcTickerAcao','calcPrecoAcao','calcLPA','calcVPA','calcCrescimento','calcPLSetor'];
-    const state = { type: currentCalcType };
+                    'calcTickerAcao','calcPrecoAcao','calcLPA','calcVPA','calcCrescimento','calcPLSetor',
+                    'gTicker','gPreco','gDPA','gBondPreset','gCustomRate','gIfixRate','gIpcaRate'];
+    const state = { type: currentCalcType, gordonG, gordonPremium, gordonBase };
     fields.forEach(id => {
         const el = document.getElementById(id);
         if (el) state[id] = el.value || '';
     });
+    const customIsReal = document.getElementById('gCustomIsReal');
+    if (customIsReal) state.gCustomIsReal = customIsReal.checked;
     saveData('byfinance_calc', state);
 }
 
 function calcLoadState() {
     const state = loadData('byfinance_calc', {});
     const fields = ['calcTicker','calcPreco','calcDPA','calcRetorno','calcG',
-                    'calcTickerAcao','calcPrecoAcao','calcLPA','calcVPA','calcCrescimento','calcPLSetor'];
+                    'calcTickerAcao','calcPrecoAcao','calcLPA','calcVPA','calcCrescimento','calcPLSetor',
+                    'gTicker','gPreco','gDPA','gBondPreset','gCustomRate','gIfixRate','gIpcaRate'];
     fields.forEach(id => {
         const el = document.getElementById(id);
         if (el && state[id] !== undefined) el.value = state[id];
     });
+    if (typeof state.gordonG === 'number') gordonG = state.gordonG;
+    if (typeof state.gordonPremium === 'number') gordonPremium = state.gordonPremium;
+    if (state.gordonBase) gordonBase = state.gordonBase;
+    if (state.gBondPreset) {
+        const sel = document.getElementById('gBondPreset');
+        if (sel) sel.value = state.gBondPreset;
+    }
+    const customIsReal = document.getElementById('gCustomIsReal');
+    if (customIsReal && typeof state.gCustomIsReal === 'boolean') customIsReal.checked = state.gCustomIsReal;
+    gordonSyncUI();
     if (state.type) setCalcType(state.type);
 }
 
@@ -1489,6 +1511,182 @@ function calcVeredito(teto, preco) {
     if (diff >= 20)  return { cls: 'veredito-buy',     label: '✓ Compra' };
     if (diff >= 0)   return { cls: 'veredito-watch',   label: '◎ Atenção' };
     return              { cls: 'veredito-sell',    label: '✕ Caro' };
+}
+
+// ============================================================
+// WIDGET: VALUATION PELO MODELO DE GORDON AJUSTADO
+// P0 = D1 / (k - g), onde k = taxa base líquida + prêmio de risco
+// ============================================================
+
+function toggleGordonSettings() {
+    const panel = document.getElementById('gordonSettings');
+    if (!panel) return;
+    panel.style.display = panel.style.display === 'none' ? '' : 'none';
+}
+
+function setGordonBase(base) {
+    gordonBase = base;
+    document.querySelectorAll('.gordon-base-opt').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.base === base);
+    });
+    gordonSyncUI();
+    calcSaveState();
+    gordonCompute();
+}
+
+function gordonPresetChange() {
+    const sel = document.getElementById('gBondPreset');
+    const isCustom = sel && sel.value === 'custom';
+    const customRow     = document.getElementById('gordonCustomRow');
+    const customTypeRow = document.getElementById('gordonCustomTypeRow');
+    const ipcaRow        = document.getElementById('gordonIpcaRow');
+    if (customRow)     customRow.style.display     = isCustom ? '' : 'none';
+    if (customTypeRow) customTypeRow.style.display = isCustom ? '' : 'none';
+
+    let isReal;
+    if (isCustom) {
+        isReal = !!document.getElementById('gCustomIsReal')?.checked;
+    } else {
+        const opt = sel ? sel.options[sel.selectedIndex] : null;
+        isReal = opt ? opt.dataset.type === 'real' : false;
+    }
+    if (ipcaRow) ipcaRow.style.display = isReal ? '' : 'none';
+
+    calcSaveState();
+    gordonCompute();
+}
+
+function gordonStep(field, delta) {
+    if (field === 'g') {
+        gordonG = Math.max(0, Math.round((gordonG + delta) * 10) / 10);
+    } else if (field === 'premium') {
+        gordonPremium = Math.max(0, Math.round((gordonPremium + delta) * 10) / 10);
+    }
+    calcSaveState();
+    gordonCompute();
+}
+
+// Sincroniza os elementos visuais (steppers, painel base, linhas condicionais) com o estado atual
+function gordonSyncUI() {
+    document.querySelectorAll('.gordon-base-opt').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.base === gordonBase);
+    });
+    const tesouroRow = document.getElementById('gordonTesouroRow');
+    const ifixRow     = document.getElementById('gordonIfixRow');
+    if (tesouroRow) tesouroRow.style.display = gordonBase === 'tesouro' ? '' : 'none';
+    if (ifixRow)     ifixRow.style.display    = gordonBase === 'ifix'    ? '' : 'none';
+
+    const sel = document.getElementById('gBondPreset');
+    const isCustom = sel && sel.value === 'custom';
+    const customRow     = document.getElementById('gordonCustomRow');
+    const customTypeRow = document.getElementById('gordonCustomTypeRow');
+    const ipcaRow        = document.getElementById('gordonIpcaRow');
+    if (customRow)     customRow.style.display     = isCustom ? '' : 'none';
+    if (customTypeRow) customTypeRow.style.display = isCustom ? '' : 'none';
+
+    let isReal;
+    if (isCustom) {
+        isReal = !!document.getElementById('gCustomIsReal')?.checked;
+    } else {
+        const opt = sel ? sel.options[sel.selectedIndex] : null;
+        isReal = opt ? opt.dataset.type === 'real' : false;
+    }
+    if (ipcaRow) ipcaRow.style.display = (gordonBase === 'tesouro' && isReal) ? '' : 'none';
+}
+
+function gordonCompute() {
+    const gVal = document.getElementById('gGVal');
+    const pVal = document.getElementById('gPremiumVal');
+    if (gVal) gVal.textContent = gordonG.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+    if (pVal) pVal.textContent = gordonPremium.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+
+    const dpa   = parseBR(document.getElementById('gDPA')?.value) || 0;
+    const preco = parseBR(document.getElementById('gPreco')?.value);
+
+    // D1 projetado
+    const d1 = dpa * (1 + gordonG / 100);
+    const d1Display = document.getElementById('gD1Display');
+    if (d1Display) d1Display.textContent = dpa ? formatCurrency(d1) : 'R$ —';
+
+    // Taxa base (líquida) conforme o benchmark escolhido
+    let netBase = 0;
+    const rateDetail = document.getElementById('gRateDetail');
+    if (gordonBase === 'tesouro') {
+        const preset = document.getElementById('gBondPreset');
+        const isCustom = preset && preset.value === 'custom';
+        const selectedOption = preset ? preset.options[preset.selectedIndex] : null;
+
+        let rate, isReal;
+        if (isCustom) {
+            rate = parseBR(document.getElementById('gCustomRate')?.value) || 0;
+            isReal = !!document.getElementById('gCustomIsReal')?.checked;
+        } else {
+            rate = selectedOption ? parseFloat(selectedOption.dataset.rate) : 0;
+            isReal = selectedOption ? selectedOption.dataset.type === 'real' : false;
+        }
+
+        let nominalRate = rate;
+        if (isReal) {
+            // Efeito Fisher: taxas de títulos IPCA+ são REAIS (acima da inflação).
+            // Para comparar com o crescimento nominal dos dividendos, convertemos
+            // para o equivalente nominal antes de aplicar o desconto de IR.
+            const ipca = parseBR(document.getElementById('gIpcaRate')?.value) || 0;
+            nominalRate = ((1 + rate / 100) * (1 + ipca / 100) - 1) * 100;
+        }
+
+        netBase = nominalRate * (1 - 0.15); // IR de 15% sobre título público; FII é isento
+        const rateDisplay = document.getElementById('gRateDisplay');
+        if (rateDisplay) rateDisplay.textContent = formatPercent(netBase);
+
+        if (rateDetail) {
+            if (isReal) {
+                rateDetail.style.display = '';
+                rateDetail.innerHTML = `Taxa real: ${formatPercent(rate)} → nominal equivalente (Fisher): <strong>${formatPercent(nominalRate)}</strong> → líquida após IR de 15%: <strong>${formatPercent(netBase)}</strong>`;
+            } else {
+                rateDetail.style.display = '';
+                rateDetail.innerHTML = `Taxa bruta: ${formatPercent(rate)} → líquida após IR de 15%: <strong>${formatPercent(netBase)}</strong>`;
+            }
+        }
+    } else {
+        netBase = parseBR(document.getElementById('gIfixRate')?.value) || 0;
+        if (rateDetail) rateDetail.style.display = 'none';
+    }
+
+    // Atualiza o texto de dica conforme a base selecionada
+    const hint = document.getElementById('gordonHint');
+    if (hint) {
+        hint.innerHTML = gordonBase === 'tesouro'
+            ? 'Você está usando <strong>Renda Fixa (Tesouro)</strong> como taxa base. Para usar o IFIX, altere nas configurações <span class="gordon-hint-gear">⚙</span>.'
+            : 'Você está usando o <strong>IFIX (ciclo imobiliário)</strong> como taxa base. Para voltar à Renda Fixa, altere nas configurações <span class="gordon-hint-gear">⚙</span>.';
+    }
+
+    // k = taxa base líquida + prêmio de risco
+    const k = netBase + gordonPremium;
+    const tetoBox    = document.getElementById('gTetoValue');
+    const margemBox  = document.getElementById('gMargemBox');
+    const margemVal  = document.getElementById('gMargemValue');
+
+    if (!dpa || k <= gordonG) {
+        if (tetoBox) tetoBox.textContent = '—';
+        if (margemVal) margemVal.textContent = '—';
+        if (margemBox) { margemBox.classList.remove('positive-box','negative-box'); }
+        return;
+    }
+
+    const teto = d1 / ((k - gordonG) / 100);
+    if (tetoBox) tetoBox.textContent = formatCurrency(teto);
+
+    if (preco) {
+        const margem = ((teto - preco) / preco) * 100;
+        if (margemVal) margemVal.textContent = (margem >= 0 ? '+' : '') + margem.toFixed(2).replace('.', ',') + '%';
+        if (margemBox) {
+            margemBox.classList.toggle('positive-box', margem >= 0);
+            margemBox.classList.toggle('negative-box', margem < 0);
+        }
+    } else {
+        if (margemVal) margemVal.textContent = '—';
+        if (margemBox) { margemBox.classList.remove('positive-box','negative-box'); }
+    }
 }
 
 // Carregar estado salvo ao entrar na aba
