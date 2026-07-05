@@ -1354,6 +1354,36 @@ function parseBR(str) {
     return isNaN(v) || v <= 0 ? null : v;
 }
 
+// Máscara para campos de MOEDA (R$): funciona como um caixa eletrônico,
+// deslocando os dígitos e sempre mantendo N casas decimais fixas ao final.
+// Ex.: digitar "1291" vira "12,91"; digitar "1234567" vira "12.345,67".
+// Ideal para preço, DPA, LPA, VPA — onde o usuário pensa em "reais e centavos".
+function maskCurrencyInput(el, decimals = 2) {
+    let digits = el.value.replace(/\D/g, '');
+    if (!digits) { el.value = ''; return; }
+    digits = digits.replace(/^0+(?=\d)/, '');       // remove zeros à esquerda supérfluos
+    while (digits.length <= decimals) digits = '0' + digits; // garante casas decimais mínimas
+    const intPart = digits
+        .slice(0, digits.length - decimals)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.');     // ponto de milhar
+    const decPart = digits.slice(digits.length - decimals);
+    el.value = intPart + ',' + decPart;
+    el.setSelectionRange(el.value.length, el.value.length);
+}
+
+// Máscara leve para campos de PERCENTUAL/ÍNDICE (taxas, crescimento, P/L etc.):
+// não desloca dígitos (então digitar "10" continua "10", não vira "0,10") —
+// só troca "." por "," automaticamente e bloqueia caracteres inválidos,
+// pra você não precisar procurar a vírgula no teclado manualmente.
+function maskPercentInput(el) {
+    let v = el.value.replace(',', '.').replace(/[^0-9.]/g, '');
+    const firstDot = v.indexOf('.');
+    if (firstDot !== -1) {
+        v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
+    }
+    el.value = v.replace('.', ',');
+}
+
 function setCalcType(type) {
     currentCalcType = type;
     document.querySelectorAll('.calc-type-btn').forEach(btn => {

@@ -581,7 +581,7 @@
                                 </div>
                                 <div class="calc-input-group">
                                     <label class="calc-label">Preço Atual (R$) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Cotação atual da cota. Use o valor em tempo real da sua corretora ou do Investidor10.">?</span></span></label>
-                                    <input type="text" id="calcPreco" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcPreco" inputmode="numeric" class="input-field" placeholder="0,00" oninput="maskCurrencyInput(this); calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -590,11 +590,11 @@
                             <div class="calc-row">
                                 <div class="calc-input-group">
                                     <label class="calc-label">DPA — Div. por Cota 12M (R$) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Soma de todos os proventos pagos por cota nos últimos 12 meses. Encontre no Investidor10 ou no relatório gerencial do fundo.">?</span></span></label>
-                                    <input type="text" id="calcDPA" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcDPA" inputmode="numeric" class="input-field" placeholder="0,00" oninput="maskCurrencyInput(this); calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
                                     <label class="calc-label">Retorno mínimo / k (%) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Bazin: retorno mínimo aceitável em dividendos (padrão 6%). Gordon: taxa de retorno que você exige do investimento. Quanto maior, mais conservador o preço teto.">?</span></span></label>
-                                    <input type="text" id="calcRetorno" class="input-field" placeholder="6,0" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcRetorno" inputmode="decimal" class="input-field" placeholder="6,0" oninput="maskPercentInput(this); calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -603,7 +603,7 @@
                             <div class="calc-row">
                                 <div class="calc-input-group">
                                     <label class="calc-label">Crescimento dos dividendos g (%) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Taxa anual esperada de crescimento dos proventos. Precisa ser menor que o retorno exigido (k). Para FIIs conservadores, use entre 2% e 4%.">?</span></span></label>
-                                    <input type="text" id="calcG" class="input-field" placeholder="3,0" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcG" inputmode="decimal" class="input-field" placeholder="3,0" oninput="maskPercentInput(this); calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -620,7 +620,7 @@
                                 </div>
                                 <div class="calc-input-group">
                                     <label class="calc-label">Preço Atual (R$) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Cotação atual da ação. Use o valor em tempo real da sua corretora ou do Fundamentus.">?</span></span></label>
-                                    <input type="text" id="calcPrecoAcao" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcPrecoAcao" inputmode="numeric" class="input-field" placeholder="0,00" oninput="maskCurrencyInput(this); calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -629,15 +629,15 @@
                             <div class="calc-row calc-row-3">
                                 <div class="calc-input-group">
                                     <label class="calc-label">LPA — Lucro por Ação (R$) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Lucro líquido da empresa dividido pelo número de ações. Disponível no Fundamentus ou nos resultados trimestrais.">?</span></span></label>
-                                    <input type="text" id="calcLPA" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcLPA" inputmode="numeric" class="input-field" placeholder="0,00" oninput="maskCurrencyInput(this); calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
                                     <label class="calc-label">VPA — Val. Patrimonial por Ação (R$) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Patrimônio líquido dividido pelo número de ações. Indica quanto cada ação vale pelo balanço contábil. Disponível no Fundamentus.">?</span></span></label>
-                                    <input type="text" id="calcVPA" class="input-field" placeholder="0,00" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcVPA" inputmode="numeric" class="input-field" placeholder="0,00" oninput="maskCurrencyInput(this); calcSaveState(); calcAll()">
                                 </div>
                                 <div class="calc-input-group">
                                     <label class="calc-label">Crescimento LPA anual (%) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Taxa anual de crescimento do lucro por ação. Use a média dos últimos 3-5 anos. Usado no cálculo do PEG Ratio (Peter Lynch).">?</span></span></label>
-                                    <input type="text" id="calcCrescimento" class="input-field" placeholder="0,0" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcCrescimento" inputmode="decimal" class="input-field" placeholder="0,0" oninput="maskPercentInput(this); calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -646,7 +646,7 @@
                             <div class="calc-row">
                                 <div class="calc-input-group">
                                     <label class="calc-label">P/L Setorial <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="P/L médio do setor da empresa. Ex: bancos 6-10, varejo 15-25, utilidades 12-18. Use como referência o histórico do setor no Fundamentus.">?</span></span></label>
-                                    <input type="text" id="calcPLSetor" class="input-field" placeholder="ex: 10" oninput="calcSaveState(); calcAll()">
+                                    <input type="text" id="calcPLSetor" inputmode="decimal" class="input-field" placeholder="ex: 10" oninput="maskPercentInput(this); calcSaveState(); calcAll()">
                                 </div>
                             </div>
                         </div>
@@ -663,7 +663,7 @@
                                 </div>
                                 <div class="calc-input-group">
                                     <label class="calc-label">Preço Atual (R$) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Cotação atual da cota, usada apenas para calcular a Margem de Segurança.">?</span></span></label>
-                                    <input type="text" id="gPreco" class="input-field" placeholder="0,00" oninput="calcSaveState(); gordonCompute()">
+                                    <input type="text" id="gPreco" inputmode="numeric" class="input-field" placeholder="0,00" oninput="maskCurrencyInput(this); calcSaveState(); gordonCompute()">
                                 </div>
                             </div>
                         </div>
@@ -688,7 +688,7 @@
                                 <span class="gordon-line-label">Dividendos por cota (12 meses) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Soma de todos os proventos pagos por cota nos últimos 12 meses (DPA / D0).">?</span></span></span>
                                 <div class="gordon-pill-input">
                                     <span class="gordon-affix">R$</span>
-                                    <input type="text" id="gDPA" value="1,00" inputmode="decimal" oninput="calcSaveState(); gordonCompute()">
+                                    <input type="text" id="gDPA" value="1,00" inputmode="numeric" oninput="maskCurrencyInput(this); calcSaveState(); gordonCompute()">
                                 </div>
                             </div>
 
@@ -723,7 +723,7 @@
                             <div class="gordon-line" id="gordonCustomRow" style="display:none">
                                 <span class="gordon-line-label">Taxa bruta anual do título (%)</span>
                                 <div class="gordon-pill-input">
-                                    <input type="text" id="gCustomRate" value="10,00" inputmode="decimal" oninput="gordonCompute()">
+                                    <input type="text" id="gCustomRate" value="10,00" inputmode="decimal" oninput="maskPercentInput(this); gordonCompute()">
                                     <span class="gordon-affix">%</span>
                                 </div>
                             </div>
@@ -739,7 +739,7 @@
                             <div class="gordon-line" id="gordonIpcaRow" style="display:none">
                                 <span class="gordon-line-label">IPCA projetado / acumulado 12m (%) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Usado para converter a taxa REAL do título (acima da inflação) em taxa NOMINAL equivalente: (1+real)×(1+IPCA)−1. Assim ela fica comparável ao crescimento nominal dos dividendos.">?</span></span></span>
                                 <div class="gordon-pill-input">
-                                    <input type="text" id="gIpcaRate" value="4,72" inputmode="decimal" oninput="gordonCompute()">
+                                    <input type="text" id="gIpcaRate" value="4,72" inputmode="decimal" oninput="maskPercentInput(this); gordonCompute()">
                                     <span class="gordon-affix">%</span>
                                 </div>
                             </div>
@@ -749,7 +749,7 @@
                             <div class="gordon-line" id="gordonIfixRow" style="display:none">
                                 <span class="gordon-line-label">Retorno médio do IFIX (10 anos) <span class="calc-tooltip-wrap"><span class="calc-tooltip-icon" data-tooltip="Retorno total médio anual do IFIX na última década (preço + proventos), refletindo um ciclo imobiliário completo.">?</span></span></span>
                                 <div class="gordon-pill-input">
-                                    <input type="text" id="gIfixRate" value="10,50" inputmode="decimal" oninput="gordonCompute()">
+                                    <input type="text" id="gIfixRate" value="10,50" inputmode="decimal" oninput="maskPercentInput(this); gordonCompute()">
                                     <span class="gordon-affix">%</span>
                                 </div>
                             </div>
