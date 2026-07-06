@@ -151,6 +151,8 @@ function switchTab(tabName) {
 
     // Refresh data
     if (tabName === 'kraken') renderKraken();
+    if (tabName === 'metas') renderMetas();
+    if (tabName === 'patrimonio') renderProventos();
     if (tabName === 'proventos') renderProventos();
     if (tabName === 'aporte') renderAporte();
     if (tabName === 'calc') { calcLoadState(); calcAll(); }
@@ -220,6 +222,7 @@ function initDashboardParticles() {
 // ===================== INIT =====================
 function initDashboard() {
     renderKraken();
+    renderMetas();
     renderProventos();
     renderAporte();
     setTimeout(updateTabIndicator, 50);
@@ -240,7 +243,9 @@ function getKrakenData() {
 function saveKrakenData() {
     const data = getKrakenData();
     data.dividendGoal = parseCurrencyInput(document.getElementById('dividendGoal').value);
-    data.patrimonioTotal = parseCurrencyInput(document.getElementById('patrimonioTotal').value);
+    // patrimonioTotal não tem mais campo próprio no formulário — ele é gerido
+    // exclusivamente por syncPatrimonioTotalFromProventos() a partir do Saldo
+    // Bruto informado em Proventos, então preservamos o valor já salvo aqui.
     data.projecaoMeta = parseCurrencyInput(document.getElementById('projecaoMeta').value) || 50000;
 
     KRAKEN_CATEGORIES.forEach(cat => {
@@ -278,14 +283,6 @@ function renderKraken() {
         projecaoInput.value = data.projecaoMeta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     } else {
         projecaoInput.value = '';
-    }
-
-    // Set patrimonio total
-    const patrimonioInput = document.getElementById('patrimonioTotal');
-    if (data.patrimonioTotal > 0) {
-        patrimonioInput.value = data.patrimonioTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    } else {
-        patrimonioInput.value = '';
     }
 
     // Render category cards
@@ -370,6 +367,50 @@ function updateKrakenCalculations() {
 }
 
 // ============================================================
+// TAB: METAS
+// ============================================================
+
+function renderMetas() {
+    const krakenData = getKrakenData();
+    const proventosData = getProventosData();
+    const keys = Object.keys(proventosData).sort();
+
+    // --- Meta de Dividendos Mensais: último mês registrado vs. meta ---
+    const divGoal = Number(krakenData.dividendGoal) || 0;
+    const divWrap = document.getElementById('metasDividendBarWrap');
+    if (divWrap) {
+        if (divGoal > 0 && keys.length > 0) {
+            const lastDiv = proventosData[keys[keys.length - 1]].dividendos || 0;
+            const pct = Math.min((lastDiv / divGoal) * 100, 100);
+            divWrap.style.display = '';
+            document.getElementById('metasDividendBarFill').style.width = pct.toFixed(1) + '%';
+            document.getElementById('metasDividendBarFill').style.background = lastDiv >= divGoal ? '#22c55e' : 'var(--primary-gradient)';
+            document.getElementById('metasDividendBarLabel').textContent =
+                formatCurrency(lastDiv) + ' / ' + formatCurrency(divGoal) + ' (' + pct.toFixed(0) + '% do último mês)';
+        } else {
+            divWrap.style.display = 'none';
+        }
+    }
+
+    // --- Meta Patrimonial: patrimônio atual (sincronizado via Proventos) vs. meta ---
+    const patrimonio = Number(krakenData.patrimonioTotal) || 0;
+    const meta = Number(krakenData.projecaoMeta) || 0;
+    const patWrap = document.getElementById('metasPatrimonioBarWrap');
+    if (patWrap) {
+        if (meta > 0 && patrimonio > 0) {
+            const pct = Math.min((patrimonio / meta) * 100, 100);
+            patWrap.style.display = '';
+            document.getElementById('metasPatrimonioBarFill').style.width = pct.toFixed(1) + '%';
+            document.getElementById('metasPatrimonioBarFill').style.background = patrimonio >= meta ? '#22c55e' : 'var(--primary-gradient)';
+            document.getElementById('metasPatrimonioBarLabel').textContent =
+                formatCurrency(patrimonio) + ' / ' + formatCurrency(meta) + ' (' + pct.toFixed(0) + '%)';
+        } else {
+            patWrap.style.display = 'none';
+        }
+    }
+}
+
+// ============================================================
 // TAB 2: PROVENTOS
 // ============================================================
 
@@ -391,6 +432,8 @@ function renderProventos() {
 
     // Update month label
     document.getElementById('proventosCurrentMonth').textContent = monthLabel(currentProventosMonth.year, currentProventosMonth.month);
+    const mirror = document.getElementById('proventosCurrentMonthMirror');
+    if (mirror) mirror.textContent = monthLabel(currentProventosMonth.year, currentProventosMonth.month);
 
     // Fill form
     setInputValue('provValorAplicado', monthData.valorAplicado);
@@ -399,14 +442,33 @@ function renderProventos() {
     setInputValue('provDividendosFII', monthData.dividendosFII);
     setInputValue('provValorFII', monthData.valorFII);
 
-    // Show calc card if data exists
-    const calcCard = document.getElementById('proventosCalcCard');
-    if (monthData.valorAplicado || monthData.saldoBruto) {
-        calcCard.style.display = '';
-        document.getElementById('calcMonthBadge').textContent = monthLabelShort(currentProventosMonth.year, currentProventosMonth.month);
+    // Show calc cards independentemente: um para Patrimônio (Ganho Capital/Performance),
+    // outro para Proventos (Yield FIIs) — cada um só aparece se tiver dado próprio.
+    const hasPatrimonioData = monthData.valorAplicado || monthData.saldoBruto;
+    const hasProventosData = monthData.dividendos || monthData.valorFII || monthData.dividendosFII;
+
+    if (hasPatrimonioData || hasProventosData) {
         updateProventosCalc(monthData, key, data);
-    } else {
-        calcCard.style.display = 'none';
+    }
+
+    const patrimonioCalcCard = document.getElementById('patrimonioCalcCard');
+    if (patrimonioCalcCard) {
+        if (hasPatrimonioData) {
+            patrimonioCalcCard.style.display = '';
+            document.getElementById('calcMonthBadge').textContent = monthLabelShort(currentProventosMonth.year, currentProventosMonth.month);
+        } else {
+            patrimonioCalcCard.style.display = 'none';
+        }
+    }
+
+    const proventosCalcCard = document.getElementById('proventosCalcCard');
+    if (proventosCalcCard) {
+        if (hasProventosData) {
+            proventosCalcCard.style.display = '';
+            document.getElementById('calcMonthBadgeProventos').textContent = monthLabelShort(currentProventosMonth.year, currentProventosMonth.month);
+        } else {
+            proventosCalcCard.style.display = 'none';
+        }
     }
 
     // Summary stats
@@ -432,25 +494,70 @@ function setInputValue(id, value) {
     }
 }
 
-function saveProventosMonth() {
+// Salva apenas Valor Aplicado + Saldo Bruto do mês, preservando os campos
+// de proventos que já estejam gravados nesse mesmo registro.
+function savePatrimonioMonth() {
     const data = getProventosData();
     const key = monthKey(currentProventosMonth.year, currentProventosMonth.month);
+    const existing = data[key] || {};
 
     data[key] = {
+        ...existing,
         year: currentProventosMonth.year,
         month: currentProventosMonth.month,
         valorAplicado: parseCurrencyInput(document.getElementById('provValorAplicado').value),
-        saldoBruto: parseCurrencyInput(document.getElementById('provSaldoBruto').value),
+        saldoBruto: parseCurrencyInput(document.getElementById('provSaldoBruto').value)
+    };
+
+    saveData('byfinance_proventos', data);
+
+    // Sincroniza automaticamente o "Patrimônio Total" (usado no Kraken e nas Metas)
+    // com o Saldo Bruto do mês mais recente informado aqui.
+    syncPatrimonioTotalFromProventos(data);
+
+    renderProventos();
+    renderAporte();
+    renderMetas();
+    updateKrakenCalculations();
+    showToast('Patrimônio do mês salvo com sucesso!');
+}
+
+// Salva apenas os campos de proventos/dividendos do mês, preservando o que
+// já estiver gravado de Valor Aplicado / Saldo Bruto nesse mesmo registro.
+function saveProventosMonth() {
+    const data = getProventosData();
+    const key = monthKey(currentProventosMonth.year, currentProventosMonth.month);
+    const existing = data[key] || {};
+
+    data[key] = {
+        ...existing,
+        year: currentProventosMonth.year,
+        month: currentProventosMonth.month,
         dividendos: parseCurrencyInput(document.getElementById('provDividendos').value),
         dividendosFII: parseCurrencyInput(document.getElementById('provDividendosFII').value),
         valorFII: parseCurrencyInput(document.getElementById('provValorFII').value)
     };
 
     saveData('byfinance_proventos', data);
+
     renderProventos();
     renderAporte();
-    updateKrakenCalculations();
-    showToast('Proventos salvos com sucesso!');
+    renderMetas();
+    showToast('Proventos do mês salvos com sucesso!');
+}
+
+// Mantém krakenData.patrimonioTotal sempre igual ao Saldo Bruto do mês mais
+// recente com dado preenchido, evitando digitar o mesmo valor em dois lugares.
+function syncPatrimonioTotalFromProventos(proventosData) {
+    const keys = Object.keys(proventosData).sort();
+    if (keys.length === 0) return;
+    const lastKey = keys[keys.length - 1];
+    const lastSaldo = proventosData[lastKey].saldoBruto || 0;
+    if (lastSaldo <= 0) return;
+
+    const krakenData = getKrakenData();
+    krakenData.patrimonioTotal = lastSaldo;
+    saveData('byfinance_kraken', krakenData);
 }
 
 function updateProventosCalc(monthData, key, allData) {
@@ -487,6 +594,7 @@ function updateProventosSummary(data) {
     let lastGanhoCapPct = 0;
     let lastYield = 0;
     let lastPerformance = 0;
+    let lastSaldoBruto = 0;
 
     keys.forEach(k => {
         totalProventos += (data[k].dividendos || 0);
@@ -496,6 +604,7 @@ function updateProventosSummary(data) {
         const last = data[keys[keys.length - 1]];
         const va = last.valorAplicado || 0;
         const sb = last.saldoBruto || 0;
+        lastSaldoBruto = sb;
         const ganhoCapR = sb - va;
         lastGanhoCapR = ganhoCapR;
         lastGanhoCapPct = va > 0 ? (lastGanhoCapR / va) * 100 : 0;
@@ -512,6 +621,43 @@ function updateProventosSummary(data) {
     document.getElementById('proventosCapitalGainPct').textContent = formatPercent(lastGanhoCapPct);
     document.getElementById('lastYieldFII').textContent = formatPercent(lastYield);
     document.getElementById('lastPerformance').textContent = formatPercent(lastPerformance);
+
+    // --- Hero: Patrimônio Total (= Saldo Bruto do mês mais recente) ---
+    const heroValue = document.getElementById('patrimonioTotalHero');
+    const heroDelta = document.getElementById('patrimonioTotalDelta');
+    if (heroValue) heroValue.textContent = formatCurrency(lastSaldoBruto);
+    if (heroDelta) {
+        if (keys.length > 1) {
+            const prevSaldo = data[keys[keys.length - 2]].saldoBruto || 0;
+            if (prevSaldo > 0) {
+                const diff = lastSaldoBruto - prevSaldo;
+                const diffPct = (diff / prevSaldo) * 100;
+                heroDelta.textContent = (diff >= 0 ? '+' : '') + formatCurrency(diff) + ' (' + (diffPct >= 0 ? '+' : '') + diffPct.toFixed(2).replace('.', ',') + '%) vs. mês anterior';
+                heroDelta.className = 'patrimonio-hero-delta ' + (diff >= 0 ? 'positive' : 'negative');
+            } else {
+                heroDelta.textContent = '';
+            }
+        } else {
+            heroDelta.textContent = '';
+        }
+    }
+
+    // Barra vs. Meta Patrimonial dentro do hero
+    const heroMetaWrap = document.getElementById('patrimonioHeroMetaWrap');
+    if (heroMetaWrap) {
+        const krakenData = getKrakenData();
+        const meta = Number(krakenData.projecaoMeta) || 0;
+        if (meta > 0 && lastSaldoBruto > 0) {
+            const pct = Math.min((lastSaldoBruto / meta) * 100, 100);
+            heroMetaWrap.style.display = '';
+            document.getElementById('patrimonioHeroBarFill').style.width = pct.toFixed(1) + '%';
+            document.getElementById('patrimonioHeroBarFill').style.background = lastSaldoBruto >= meta ? '#22c55e' : 'var(--primary-gradient)';
+            document.getElementById('patrimonioHeroBarLabel').textContent =
+                pct.toFixed(0) + '% da Meta Patrimonial (' + formatCurrency(meta) + ')';
+        } else {
+            heroMetaWrap.style.display = 'none';
+        }
+    }
 
     updateGoalBar(totalProventos);
     updateProjectionAndYoY(data);
@@ -1265,9 +1411,15 @@ function updateGoalBar(totalProventos) {
 
 function updateProjectionAndYoY(data) {
     const keys = Object.keys(data).sort();
-    const row = document.getElementById('projectionRow');
-    if (!row || keys.length < 2) { if (row) row.style.display = 'none'; return; }
-    row.style.display = '';
+    const projRow = document.getElementById('projectionRowPatrimonio');
+    const yoyRow = document.getElementById('yoyRowProventos');
+    if (keys.length < 2) {
+        if (projRow) projRow.style.display = 'none';
+        if (yoyRow) yoyRow.style.display = 'none';
+        return;
+    }
+    if (projRow) projRow.style.display = '';
+    if (yoyRow) yoyRow.style.display = '';
 
     // Projeção: média de aportes dos últimos 3 meses * meses restantes até meta patrimonial
     const krakenData = getKrakenData();

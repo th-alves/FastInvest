@@ -113,6 +113,14 @@
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1.5 5.5V10.5L8 14.5L14.5 10.5V5.5L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
                             <span>KRAKEN</span>
                         </button>
+                        <button class="tab-btn" data-tab="metas" onclick="switchTab('metas')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="0.9" fill="currentColor"/></svg>
+                            <span>METAS</span>
+                        </button>
+                        <button class="tab-btn" data-tab="patrimonio" onclick="switchTab('patrimonio')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2.5L14 6.5V13.5H2V6.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 13.5V9.5H10V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                            <span>PATRIMÔNIO</span>
+                        </button>
                         <button class="tab-btn" data-tab="proventos" onclick="switchTab('proventos')">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V7L4.5 3.5H11.5L14 7V12H2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 7H14" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
                             <span>PROVENTOS</span>
@@ -177,6 +185,14 @@
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1.5 5.5V10.5L8 14.5L14.5 10.5V5.5L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
                             <span>KRAKEN</span>
                         </button>
+                        <button class="menu-tab-item tab-btn" data-tab="metas" onclick="switchTab('metas'); closeMenu()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="0.9" fill="currentColor"/></svg>
+                            <span>METAS</span>
+                        </button>
+                        <button class="menu-tab-item tab-btn" data-tab="patrimonio" onclick="switchTab('patrimonio'); closeMenu()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2.5L14 6.5V13.5H2V6.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 13.5V9.5H10V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+                            <span>PATRIMÔNIO</span>
+                        </button>
                         <button class="menu-tab-item tab-btn" data-tab="proventos" onclick="switchTab('proventos'); closeMenu()">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V7L4.5 3.5H11.5L14 7V12H2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 7H14" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
                             <span>PROVENTOS</span>
@@ -220,106 +236,58 @@
         <main class="dashboard-main">
             <!-- ========== TAB 1: KRAKEN ========== -->
             <div id="tab-kraken" class="tab-content active">
-                <!-- Meta de Dividendos -->
-                <div class="meta-goal-section">
-                    <div class="card card-highlight meta-goal-card">
-                        <div class="meta-goal-inner">
-                            <div class="meta-goal-info">
-                                <span class="meta-goal-label">🎯 Meta de Dividendos Mensais</span>
-                                <p class="meta-goal-desc">Defina sua meta mensal de rendimentos passivos</p>
-                            </div>
-                            <div class="meta-goal-input">
-                                <span class="currency-prefix">R$</span>
-                                <input type="text" id="dividendGoal" class="input-field input-lg" placeholder="0,00" oninput="handleCurrencyInput(this); saveKrakenData()">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Patrimônio Total -->
-                <div class="meta-goal-section">
-                    <div class="card card-highlight meta-goal-card">
-                        <div class="meta-goal-inner">
-                            <div class="meta-goal-info">
-                                <span class="meta-goal-label">💰 Patrimônio Total</span>
-                                <p class="meta-goal-desc">Informe o valor total do seu patrimônio</p>
-                            </div>
-                            <div class="meta-goal-input">
-                                <span class="currency-prefix">R$</span>
-                                <input type="text" id="patrimonioTotal" class="input-field input-lg" placeholder="0,00" oninput="handleCurrencyInput(this); saveKrakenData()">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Meta Patrimonial -->
-                <div class="meta-goal-section">
-                    <div class="card card-highlight meta-goal-card">
-                        <div class="meta-goal-inner">
-                            <div class="meta-goal-info">
-                                <span class="meta-goal-label">🚀 Meta Patrimonial</span>
-                                <p class="meta-goal-desc">Valor alvo para a projeção patrimonial</p>
-                            </div>
-                            <div class="meta-goal-input">
-                                <span class="currency-prefix">R$</span>
-                                <input type="text" id="projecaoMeta" class="input-field input-lg" placeholder="50.000,00" oninput="handleCurrencyInput(this); saveKrakenData()">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- KRAKEN Categories -->
                 <div class="kraken-grid" id="krakenGrid">
                     <!-- Generated by JS -->
                 </div>
             </div>
 
-            <!-- ========== TAB 2: PROVENTOS ========== -->
-            <div id="tab-proventos" class="tab-content">
-                <!-- Summary Cards -->
-                <div class="stats-row stats-row-4">
-                    <div class="stat-card">
-                        <span class="stat-label">Total de Proventos</span>
-                        <span class="stat-value stat-highlight" id="totalProventos">R$ 0,00</span>
-                        <div class="goal-bar-wrap" id="goalBarWrap" style="display:none">
-                            <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill"></div></div>
-                            <span class="goal-bar-label" id="goalBarLabel"></span>
+            <!-- ========== TAB: METAS ========== -->
+            <div id="tab-metas" class="tab-content">
+                <div class="metas-intro">
+                    <h2 class="metas-title">Metas e Objetivos</h2>
+                    <p class="metas-subtitle">Defina seus alvos de patrimônio e renda passiva — o resto do app acompanha o progresso pra você.</p>
+                </div>
+
+                <div class="metas-grid">
+                    <!-- Meta de Dividendos -->
+                    <div class="card card-highlight meta-goal-card meta-goal-card-v2">
+                        <div class="meta-goal-icon">🎯</div>
+                        <span class="meta-goal-label">Meta de Dividendos Mensais</span>
+                        <p class="meta-goal-desc">Defina sua meta mensal de rendimentos passivos</p>
+                        <div class="meta-goal-input meta-goal-input-v2">
+                            <span class="currency-prefix">R$</span>
+                            <input type="text" id="dividendGoal" class="input-field input-lg" placeholder="0,00" oninput="handleCurrencyInput(this); saveKrakenData(); renderMetas()">
+                        </div>
+                        <div class="goal-bar-wrap" id="metasDividendBarWrap" style="display:none">
+                            <div class="goal-bar-track"><div class="goal-bar-fill" id="metasDividendBarFill"></div></div>
+                            <span class="goal-bar-label" id="metasDividendBarLabel"></span>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <span class="stat-label">Ganho de Capital</span>
-                        <span class="stat-value" id="proventosCapitalGain">R$ 0,00</span>
-                        <span class="stat-sub" id="proventosCapitalGainPct">0,00%</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-label">Yield FIIs (Último Mês)</span>
-                        <span class="stat-value" id="lastYieldFII">0,00%</span>
-                        <span class="stat-sub" id="yoyComparison" style="display:none"></span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-label">Performance</span>
-                        <span class="stat-value" id="lastPerformance">0,00%</span>
+
+                    <!-- Meta Patrimonial -->
+                    <div class="card card-highlight meta-goal-card meta-goal-card-v2">
+                        <div class="meta-goal-icon">🚀</div>
+                        <span class="meta-goal-label">Meta Patrimonial</span>
+                        <p class="meta-goal-desc">Valor alvo para a projeção patrimonial</p>
+                        <div class="meta-goal-input meta-goal-input-v2">
+                            <span class="currency-prefix">R$</span>
+                            <input type="text" id="projecaoMeta" class="input-field input-lg" placeholder="50.000,00" oninput="handleCurrencyInput(this); saveKrakenData(); renderMetas()">
+                        </div>
+                        <div class="goal-bar-wrap" id="metasPatrimonioBarWrap" style="display:none">
+                            <div class="goal-bar-track"><div class="goal-bar-fill" id="metasPatrimonioBarFill"></div></div>
+                            <span class="goal-bar-label" id="metasPatrimonioBarLabel"></span>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Projection + YoY row -->
-                <div class="stats-row stats-row-2" id="projectionRow" style="display:none">
-                    <div class="stat-card stat-card-sm">
-                        <span class="stat-label">Projeção Patrimonial</span>
-                        <span class="stat-value" id="projectionValue">—</span>
-                        <span class="stat-sub" id="projectionMonths"></span>
-                    </div>
-                    <div class="stat-card stat-card-sm">
-                        <span class="stat-label">vs. Mesmo Mês Ano Anterior</span>
-                        <span class="stat-value" id="yoyDividendos">—</span>
-                        <span class="stat-sub" id="yoyDividendosPct"></span>
-                    </div>
-                </div>
-
-                <!-- Month Input Section -->
-                <div class="card proventos-input-card">
+            <!-- ========== TAB: PATRIMÔNIO ========== -->
+            <div id="tab-patrimonio" class="tab-content">
+                <!-- Patrimônio do Mês: hero exclusivo para Valor Aplicado / Saldo Bruto -->
+                <div class="card card-highlight patrimonio-mes-card">
                     <div class="card-header">
-                        <h3 class="card-title">Registrar Proventos</h3>
+                        <h3 class="card-title">Patrimônio do Mês</h3>
                         <div class="month-selector">
                             <button class="btn-icon btn-sm" onclick="changeProventosMonth(-1)">
                                 <svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -330,21 +298,119 @@
                             </button>
                         </div>
                     </div>
-                    <div class="proventos-form-grid">
+                    <p class="patrimonio-mes-desc">Informe o total investido e o saldo bruto atual — esses dois valores alimentam o Ganho de Capital, a Performance e o Patrimônio Total do app.</p>
+                    <div class="patrimonio-mes-grid">
                         <div class="input-group">
                             <label>Valor Aplicado (total investido)</label>
                             <div class="input-with-prefix">
                                 <span class="currency-prefix">R$</span>
-                                <input type="text" id="provValorAplicado" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this)">
+                                <input type="text" id="provValorAplicado" class="input-field input-lg" placeholder="0,00" oninput="handleCurrencyInput(this)">
                             </div>
                         </div>
                         <div class="input-group">
                             <label>Saldo Bruto (valor atual)</label>
                             <div class="input-with-prefix">
                                 <span class="currency-prefix">R$</span>
-                                <input type="text" id="provSaldoBruto" class="input-field" placeholder="0,00" oninput="handleCurrencyInput(this)">
+                                <input type="text" id="provSaldoBruto" class="input-field input-lg" placeholder="0,00" oninput="handleCurrencyInput(this)">
                             </div>
                         </div>
+                    </div>
+                    <div class="patrimonio-mes-save">
+                        <button class="btn-primary" onclick="savePatrimonioMonth()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Salvar Patrimônio do Mês
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hero: Patrimônio Total -->
+                <div class="patrimonio-hero card card-highlight">
+                    <div class="patrimonio-hero-main">
+                        <span class="patrimonio-hero-label">💰 Patrimônio Total</span>
+                        <span class="patrimonio-hero-value" id="patrimonioTotalHero">R$ 0,00</span>
+                        <span class="patrimonio-hero-delta" id="patrimonioTotalDelta"></span>
+                    </div>
+                    <div class="patrimonio-hero-meta" id="patrimonioHeroMetaWrap" style="display:none">
+                        <div class="goal-bar-wrap">
+                            <div class="goal-bar-track"><div class="goal-bar-fill" id="patrimonioHeroBarFill"></div></div>
+                            <span class="goal-bar-label" id="patrimonioHeroBarLabel"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="stats-row stats-row-2">
+                    <div class="stat-card">
+                        <span class="stat-label">Ganho de Capital</span>
+                        <span class="stat-value" id="proventosCapitalGain">R$ 0,00</span>
+                        <span class="stat-sub" id="proventosCapitalGainPct">0,00%</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Performance</span>
+                        <span class="stat-value" id="lastPerformance">0,00%</span>
+                    </div>
+                </div>
+
+                <!-- Projection row -->
+                <div class="stats-row stats-row-1" id="projectionRowPatrimonio" style="display:none">
+                    <div class="stat-card stat-card-sm">
+                        <span class="stat-label">Projeção Patrimonial</span>
+                        <span class="stat-value" id="projectionValue">—</span>
+                        <span class="stat-sub" id="projectionMonths"></span>
+                    </div>
+                </div>
+
+                <!-- Resultados do mês navegado acima -->
+                <div class="card" id="patrimonioCalcCard" style="display:none;">
+                    <div class="card-header">
+                        <h3 class="card-title">Resultados do Mês</h3>
+                        <span class="badge badge-blue" id="calcMonthBadge">Jun/2026</span>
+                    </div>
+                    <div class="stats-row stats-row-2 no-margin">
+                        <div class="mini-stat">
+                            <span class="mini-stat-label">Ganho de Capital</span>
+                            <span class="mini-stat-value" id="calcGanhoCapital">R$ 0,00</span>
+                            <span class="mini-stat-sub" id="calcGanhoCapitalPct">0,00%</span>
+                        </div>
+                        <div class="mini-stat">
+                            <span class="mini-stat-label">Performance</span>
+                            <span class="mini-stat-value" id="calcPerformance">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== TAB 2: PROVENTOS ========== -->
+            <div id="tab-proventos" class="tab-content">
+                <!-- Summary Cards -->
+                <div class="stats-row stats-row-3 proventos-summary-row">
+                    <div class="stat-card">
+                        <span class="stat-label">Total de Proventos</span>
+                        <span class="stat-value stat-highlight" id="totalProventos">R$ 0,00</span>
+                        <div class="goal-bar-wrap" id="goalBarWrap" style="display:none">
+                            <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill"></div></div>
+                            <span class="goal-bar-label" id="goalBarLabel"></span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Yield FIIs (Último Mês)</span>
+                        <span class="stat-value" id="lastYieldFII">0,00%</span>
+                        <span class="stat-sub" id="yoyComparison" style="display:none"></span>
+                    </div>
+                    <div class="stat-card" id="yoyRowProventos" style="display:none">
+                        <span class="stat-label">vs. Mesmo Mês Ano Anterior</span>
+                        <span class="stat-value" id="yoyDividendos">—</span>
+                        <span class="stat-sub" id="yoyDividendosPct"></span>
+                    </div>
+                </div>
+
+                <!-- Registrar Proventos: exclusivo para os dividendos recebidos no mês -->
+                <div class="card proventos-input-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Registrar Proventos</h3>
+                        <span class="month-label month-label-mirror" id="proventosCurrentMonthMirror">Junho 2026</span>
+                    </div>
+                    <div class="proventos-form-grid">
                         <div class="input-group">
                             <label>Dividendos do Mês (total)</label>
                             <div class="input-with-prefix">
@@ -369,31 +435,22 @@
                         <div class="input-group input-group-btn">
                             <button class="btn-primary" onclick="saveProventosMonth()">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                Salvar Mês
+                                Salvar Proventos do Mês
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Calculated Results for Current Month -->
+                <!-- Resultados do mês navegado acima (Yield FIIs) -->
                 <div class="card" id="proventosCalcCard" style="display:none;">
                     <div class="card-header">
-                        <h3 class="card-title">Resultados Calculados</h3>
-                        <span class="badge badge-blue" id="calcMonthBadge">Jun/2026</span>
+                        <h3 class="card-title">Resultados do Mês</h3>
+                        <span class="badge badge-blue" id="calcMonthBadgeProventos">Jun/2026</span>
                     </div>
-                    <div class="stats-row stats-row-3 no-margin">
-                        <div class="mini-stat">
-                            <span class="mini-stat-label">Ganho de Capital</span>
-                            <span class="mini-stat-value" id="calcGanhoCapital">R$ 0,00</span>
-                            <span class="mini-stat-sub" id="calcGanhoCapitalPct">0,00%</span>
-                        </div>
+                    <div class="stats-row stats-row-1 no-margin">
                         <div class="mini-stat">
                             <span class="mini-stat-label">Yield FIIs</span>
                             <span class="mini-stat-value" id="calcYieldFII">0,00%</span>
-                        </div>
-                        <div class="mini-stat">
-                            <span class="mini-stat-label">Performance</span>
-                            <span class="mini-stat-value" id="calcPerformance">—</span>
                         </div>
                     </div>
                 </div>
@@ -470,50 +527,52 @@
 
             <!-- ========== TAB 3: APORTE DO MÊS ========== -->
             <div id="tab-aporte" class="tab-content">
-                <!-- Suggested Contribution -->
-                <div class="card card-highlight suggested-card">
-                    <div class="suggested-inner">
-                        <div class="suggested-icon">
-                            <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-                                <circle cx="22" cy="22" r="20" stroke="url(#sugGrad)" stroke-width="2"/>
-                                <path d="M22 12V32M12 22H32" stroke="url(#sugGrad)" stroke-width="2.5" stroke-linecap="round"/>
-                                <defs><linearGradient id="sugGrad" x1="0" y1="0" x2="44" y2="44"><stop stop-color="#E63946"/><stop offset="1" stop-color="#FFB703"/></linearGradient></defs>
-                            </svg>
-                        </div>
-                        <div class="suggested-info">
-                            <span class="suggested-label">Aporte Sugerido para o Próximo Mês</span>
-                            <span class="suggested-value" id="suggestedAporteValue">R$ 0,00</span>
-                            <span class="suggested-formula" id="suggestedFormula">Aporte anterior + Dividendos do mês anterior</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Register Current Month -->
-                <div class="card aporte-input-card">
-                    <div class="card-header">
-                        <h3 class="card-title">Registrar Aporte</h3>
-                        <div class="month-selector">
-                            <button class="btn-icon btn-sm" onclick="changeAporteMonth(-1)">
-                                <svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            </button>
-                            <span id="aporteCurrentMonth" class="month-label">Junho 2026</span>
-                            <button class="btn-icon btn-sm" onclick="changeAporteMonth(1)">
-                                <svg width="16" height="16" viewBox="0 0 16 16"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="aporte-form">
-                        <div class="input-group">
-                            <label>Valor aportado neste mês</label>
-                            <div class="input-with-prefix">
-                                <span class="currency-prefix">R$</span>
-                                <input type="text" id="aporteValor" class="input-field input-lg" placeholder="0,00" oninput="handleCurrencyInput(this)">
+                <div class="aporte-top-grid">
+                    <!-- Suggested Contribution -->
+                    <div class="card card-highlight suggested-card">
+                        <div class="suggested-inner">
+                            <div class="suggested-icon">
+                                <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                                    <circle cx="22" cy="22" r="20" stroke="url(#sugGrad)" stroke-width="2"/>
+                                    <path d="M22 12V32M12 22H32" stroke="url(#sugGrad)" stroke-width="2.5" stroke-linecap="round"/>
+                                    <defs><linearGradient id="sugGrad" x1="0" y1="0" x2="44" y2="44"><stop stop-color="#E63946"/><stop offset="1" stop-color="#FFB703"/></linearGradient></defs>
+                                </svg>
+                            </div>
+                            <div class="suggested-info">
+                                <span class="suggested-label">Aporte Sugerido para o Próximo Mês</span>
+                                <span class="suggested-value" id="suggestedAporteValue">R$ 0,00</span>
+                                <span class="suggested-formula" id="suggestedFormula">Aporte anterior + Dividendos do mês anterior</span>
                             </div>
                         </div>
-                        <button class="btn-primary" onclick="saveAporteMonth()">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            Salvar Aporte
-                        </button>
+                    </div>
+
+                    <!-- Register Current Month -->
+                    <div class="card aporte-input-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Registrar Aporte</h3>
+                            <div class="month-selector">
+                                <button class="btn-icon btn-sm" onclick="changeAporteMonth(-1)">
+                                    <svg width="16" height="16" viewBox="0 0 16 16"><path d="M10 4L6 8L10 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                </button>
+                                <span id="aporteCurrentMonth" class="month-label">Junho 2026</span>
+                                <button class="btn-icon btn-sm" onclick="changeAporteMonth(1)">
+                                    <svg width="16" height="16" viewBox="0 0 16 16"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="aporte-form">
+                            <div class="input-group">
+                                <label>Valor aportado neste mês</label>
+                                <div class="input-with-prefix">
+                                    <span class="currency-prefix">R$</span>
+                                    <input type="text" id="aporteValor" class="input-field input-lg" placeholder="0,00" oninput="handleCurrencyInput(this)">
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="saveAporteMonth()">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                Salvar Aporte
+                            </button>
+                        </div>
                     </div>
                 </div>
 

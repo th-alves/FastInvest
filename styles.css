@@ -1193,6 +1193,7 @@ ul, ol { list-style: none; }
 
 .stats-row-4 { grid-template-columns: repeat(4, 1fr); }
 .stats-row-3 { grid-template-columns: repeat(3, 1fr); }
+.stats-row-1 { grid-template-columns: 1fr; }
 .no-margin { margin-bottom: 0; }
 
 .stat-card {
@@ -1411,6 +1412,121 @@ ul, ol { list-style: none; }
   text-align: right;
   font-size: var(--font-xl);
   font-weight: 700;
+}
+
+/* ── Metas Tab ───────────────────────────────────────────── */
+.metas-intro { margin-bottom: var(--space-lg); }
+
+.metas-title {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.metas-subtitle {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  max-width: 560px;
+  line-height: 1.5;
+}
+
+.metas-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+  align-items: stretch;
+  max-width: 760px;
+}
+
+.meta-goal-card-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.meta-goal-icon { font-size: 1.75rem; line-height: 1; margin-bottom: 4px; }
+
+.meta-goal-card-v2 .meta-goal-label {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.meta-goal-card-v2 .meta-goal-desc {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  margin: 0 0 var(--space-sm);
+  min-height: 34px;
+}
+
+.meta-goal-input-v2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-xs);
+}
+
+.meta-goal-input-v2 .input-field {
+  width: 100%;
+  text-align: left;
+}
+
+.meta-goal-hint {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Proventos: Hero Patrimônio Total ───────────────────────── */
+.patrimonio-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xl);
+  padding: var(--space-lg) var(--space-xl);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.patrimonio-hero-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.patrimonio-hero-label {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.patrimonio-hero-value {
+  font-size: var(--font-3xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.patrimonio-hero-delta {
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+
+.patrimonio-hero-meta {
+  min-width: 240px;
+  flex: 1;
+  max-width: 360px;
+}
+
+@media (max-width: 768px) {
+  .metas-grid { grid-template-columns: 1fr; }
+  .patrimonio-hero { flex-direction: column; align-items: flex-start; }
+  .patrimonio-hero-meta { max-width: 100%; width: 100%; }
 }
 
 /* ── KRAKEN Grid ─────────────────────────────────────────── */
@@ -1683,9 +1799,51 @@ ul, ol { list-style: none; }
   align-items: flex-end;
 }
 
+.patrimonio-mes-save {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-subtle);
+}
+
 .proventos-input-card,
 .aporte-input-card {
   border-left: 4px solid var(--primary);
+}
+
+/* ── Patrimônio do Mês (hero de Valor Aplicado / Saldo Bruto) ── */
+.patrimonio-mes-card { margin-bottom: var(--space-lg); }
+
+.patrimonio-mes-desc {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: -4px 0 var(--space-md);
+  max-width: 640px;
+}
+
+.patrimonio-mes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+}
+
+.patrimonio-mes-grid .input-field.input-lg {
+  width: 100%;
+  font-size: var(--font-xl);
+  font-weight: 700;
+}
+
+.month-label-mirror {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .patrimonio-mes-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Chart Container ─────────────────────────────────────── */
@@ -1943,11 +2101,58 @@ ul, ol { list-style: none; }
   margin-bottom: 0;
 }
 
+/* ── Aporte: Sugerido + Registrar lado a lado ───────────────── */
+.aporte-top-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+  align-items: stretch;
+  margin-bottom: var(--space-lg);
+}
+
+.aporte-top-grid .card { margin-bottom: 0; }
+
+@media (max-width: 900px) {
+  .aporte-top-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Proventos: linha de resumo (Total, Yield, YoY) ─────────
+   Usa flex em vez de grid porque o card de YoY é exibido/
+   escondido dinamicamente via JS. Com flex, os cards visíveis
+   sempre se redistribuem e preenchem a linha toda — sem sobrar
+   espaço quando só 2 dos 3 cards aparecem. */
+.proventos-summary-row {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.proventos-summary-row .stat-card {
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+  text-align: center;
+}
+
+.proventos-summary-row .goal-bar-wrap {
+  width: 100%;
+  align-items: center;
+}
+
+.proventos-summary-row .goal-bar-track {
+  width: 70%;
+  max-width: 160px;
+  height: 3px;
+  margin: 0 auto;
+}
+
 /* ── Suggested Card ──────────────────────────────────────── */
 .suggested-card {
   position: relative;
   border-color: var(--primary-a25);
   background: linear-gradient(135deg, var(--primary-a06), var(--accent-a06), var(--bg-card));
+  display: flex;
+  align-items: center;
 }
 
 .suggested-card::before {
@@ -1963,6 +2168,7 @@ ul, ol { list-style: none; }
   display: flex;
   align-items: center;
   gap: var(--space-xl);
+  width: 100%;
 }
 
 .suggested-icon { flex-shrink: 0; }
