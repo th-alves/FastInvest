@@ -218,13 +218,11 @@
 body,
 .card,
 .stat-card,
-.category-card,
 .dashboard-header,
 .tab-nav,
 .btn-primary,
 .btn-icon,
 .input-field,
-.textarea-field,
 .input-with-prefix,
 .toast,
 .table-wrapper,
@@ -323,10 +321,6 @@ ul, ol { list-style: none; }
     box-shadow: 0 0 16px var(--primary-a30),
                 0 0 48px var(--accent-a12);
   }
-}
-
-@keyframes progressFill {
-  from { width: 0; }
 }
 
 @keyframes toastSlideIn {
@@ -1332,26 +1326,6 @@ ul, ol { list-style: none; }
   padding: var(--space-md);
 }
 
-.textarea-field {
-  width: 100%;
-  padding: var(--space-sm) var(--space-md);
-  font-size: var(--font-sm);
-  color: var(--text-primary);
-  background: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  resize: vertical;
-  min-height: 50px;
-  line-height: 1.6;
-  transition: all var(--duration-base) var(--ease-out);
-}
-
-.textarea-field:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--border-focus);
-  background: var(--bg-elevated);
-}
-
 .input-with-prefix {
   display: flex;
   align-items: center;
@@ -1528,197 +1502,6 @@ ul, ol { list-style: none; }
   .patrimonio-hero { flex-direction: column; align-items: flex-start; }
   .patrimonio-hero-meta { max-width: 100%; width: 100%; }
 }
-
-/* ── KRAKEN Grid ─────────────────────────────────────────── */
-.kraken-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-md);
-}
-
-.category-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding: var(--space-lg);
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  border-left: 4px solid var(--cat-color, var(--primary));
-  position: relative;
-  overflow: hidden;
-  transition: transform var(--duration-base) var(--ease-out),
-              box-shadow var(--duration-base) var(--ease-out),
-              border-color var(--duration-base) var(--ease-out),
-              background-color 0.35s ease;
-  animation: slideUp 0.5s var(--ease-out) both;
-}
-
-/* Mouse tracking glow on hover */
-.category-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    600px circle at var(--mouse-x, -100%) var(--mouse-y, -100%),
-    var(--mouse-glow),
-    transparent 40%
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.category-card:hover::before {
-  opacity: 1;
-}
-
-.category-card > * {
-  position: relative;
-  z-index: 1;
-}
-
-.category-card:nth-child(1) { animation-delay: 0.05s; }
-.category-card:nth-child(2) { animation-delay: 0.10s; }
-.category-card:nth-child(3) { animation-delay: 0.15s; }
-.category-card:nth-child(4) { animation-delay: 0.20s; }
-.category-card:nth-child(5) { animation-delay: 0.25s; }
-.category-card:nth-child(6) { animation-delay: 0.30s; }
-
-.category-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--card-hover-glow);
-  border-color: var(--primary-a15);
-}
-
-.category-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-}
-
-.kraken-letter-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-md);
-  flex-shrink: 0;
-  font-weight: 800;
-}
-
-.kraken-letter {
-  font-size: var(--font-2xl);
-  line-height: 1;
-}
-
-.category-title-wrap { flex: 1; min-width: 0; }
-
-.category-name {
-  font-size: var(--font-md);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.category-desc {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-}
-
-.category-ideal { flex-shrink: 0; }
-
-.category-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.category-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-}
-
-.category-inputs .input-group { margin-bottom: 0; }
-
-.category-stats {
-  display: flex;
-  gap: var(--space-xl);
-}
-
-.cat-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cat-stat-label {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.cat-stat-value {
-  font-size: var(--font-lg);
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-/* ── Progress Comparison ─────────────────────────────────── */
-.progress-comparison {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.progress-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-}
-
-.progress-row .progress-label {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-  width: 40px;
-  flex-shrink: 0;
-  margin: 0;
-}
-
-.progress-row .progress-bar {
-  flex: 1;
-  height: 8px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  position: relative;
-}
-
-.progress-row .progress-fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.8s var(--ease-out);
-  animation: progressFill 1s var(--ease-out) both;
-}
-
-.progress-ideal { opacity: 0.45; }
-
-.progress-row .progress-value {
-  font-size: var(--font-xs);
-  color: var(--text-secondary);
-  width: 55px;
-  text-align: right;
-  flex-shrink: 0;
-  font-weight: 600;
-}
-
-.assets-group { margin-bottom: 0; }
 
 /* ── Badge ───────────────────────────────────────────────── */
 .badge {
@@ -2255,10 +2038,6 @@ ul, ol { list-style: none; }
 
 /* Tablet — ≤ 1024px */
 @media (max-width: 1024px) {
-  .kraken-grid {
-    grid-template-columns: 1fr;
-  }
-
   .stats-row,
   .stats-row-4 {
     grid-template-columns: repeat(2, 1fr);
@@ -2554,7 +2333,6 @@ ul, ol { list-style: none; }
   .card { padding: var(--space-md); }
 
   .proventos-form-grid { grid-template-columns: 1fr; }
-  .category-inputs { grid-template-columns: 1fr; }
 
   .aporte-form {
     flex-direction: column;
@@ -2656,11 +2434,6 @@ ul, ol { list-style: none; }
 
   .landing-page { padding: var(--space-md); }
 
-  .category-stats {
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-
   .tab-nav { border-radius: var(--radius-sm); }
 
   .tab-btn {
@@ -2712,7 +2485,7 @@ ul, ol { list-style: none; }
 
   body { background: #fff; color: #000; }
 
-  .card, .stat-card, .category-card {
+  .card, .stat-card {
     border: 1px solid #ddd;
     box-shadow: none;
     background: #fff;

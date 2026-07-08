@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="FastInvest — Controle inteligente de investimentos pessoais com método KRAKEN, proventos e aporte mensal.">
+    <meta name="description" content="FastInvest — Controle inteligente de investimentos pessoais com patrimônio, proventos e aporte mensal.">
     <meta name="theme-color" content="#0A0A0A">
     <title>FastInvest — Controle de Investimentos</title>
     <link rel="icon" type="image/png" href="favicon.png">
@@ -55,7 +55,7 @@
                 <h1 class="logo-text">Fast<span class="logo-highlight">Invest</span></h1>
             </div>
             <p class="landing-tagline">Controle inteligente dos seus investimentos.</p>
-            <p class="landing-subtitle">Gerencie sua carteira com o método KRAKEN, acompanhe proventos e planeje seus aportes mensais — tudo em um só lugar.</p>
+            <p class="landing-subtitle">Acompanhe seu patrimônio, proventos e planeje seus aportes mensais — tudo em um só lugar.</p>
             <button id="btnEntrar" class="btn-primary btn-lg" onclick="enterDashboard()">
                 <span>Acessar Dashboard</span>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -72,8 +72,8 @@
                     <span>Dados Locais</span>
                 </div>
                 <div class="feature-pill">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 4L10 9L14 2" stroke="#A366FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Método KRAKEN</span>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2.5L14 6.5V13.5H2V6.5Z" stroke="#A366FF" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 13.5V9.5H10V13.5" stroke="#A366FF" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                    <span>Controle Patrimonial</span>
                 </div>
             </div>
         </div>
@@ -109,15 +109,11 @@
                 <div class="header-right-group">
                     <!-- Tab Navigation -->
                     <nav class="tab-nav" id="tabNav">
-                        <button class="tab-btn active" data-tab="kraken" onclick="switchTab('kraken')">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1.5 5.5V10.5L8 14.5L14.5 10.5V5.5L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-                            <span>KRAKEN</span>
-                        </button>
                         <button class="tab-btn" data-tab="metas" onclick="switchTab('metas')">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="0.9" fill="currentColor"/></svg>
                             <span>METAS</span>
                         </button>
-                        <button class="tab-btn" data-tab="patrimonio" onclick="switchTab('patrimonio')">
+                        <button class="tab-btn active" data-tab="patrimonio" onclick="switchTab('patrimonio')">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2.5L14 6.5V13.5H2V6.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 13.5V9.5H10V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
                             <span>PATRIMÔNIO</span>
                         </button>
@@ -181,15 +177,11 @@
                 <div class="menu-dropdown" id="menuDropdown">
                     <!-- Tabs section inside mobile menu -->
                     <div class="menu-tabs-section">
-                        <button class="menu-tab-item tab-btn active" data-tab="kraken" onclick="switchTab('kraken'); closeMenu()">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1.5 5.5V10.5L8 14.5L14.5 10.5V5.5L8 1.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-                            <span>KRAKEN</span>
-                        </button>
                         <button class="menu-tab-item tab-btn" data-tab="metas" onclick="switchTab('metas'); closeMenu()">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="0.9" fill="currentColor"/></svg>
                             <span>METAS</span>
                         </button>
-                        <button class="menu-tab-item tab-btn" data-tab="patrimonio" onclick="switchTab('patrimonio'); closeMenu()">
+                        <button class="menu-tab-item tab-btn active" data-tab="patrimonio" onclick="switchTab('patrimonio'); closeMenu()">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2.5L14 6.5V13.5H2V6.5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 13.5V9.5H10V13.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
                             <span>PATRIMÔNIO</span>
                         </button>
@@ -234,14 +226,6 @@
 
         <!-- Main Content -->
         <main class="dashboard-main">
-            <!-- ========== TAB 1: KRAKEN ========== -->
-            <div id="tab-kraken" class="tab-content active">
-                <!-- KRAKEN Categories -->
-                <div class="kraken-grid" id="krakenGrid">
-                    <!-- Generated by JS -->
-                </div>
-            </div>
-
             <!-- ========== TAB: METAS ========== -->
             <div id="tab-metas" class="tab-content">
                 <div class="metas-intro">
@@ -283,7 +267,7 @@
             </div>
 
             <!-- ========== TAB: PATRIMÔNIO ========== -->
-            <div id="tab-patrimonio" class="tab-content">
+            <div id="tab-patrimonio" class="tab-content active">
                 <!-- Patrimônio do Mês: hero exclusivo para Valor Aplicado / Saldo Bruto -->
                 <div class="card card-highlight patrimonio-mes-card">
                     <div class="card-header">

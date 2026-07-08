@@ -4,15 +4,6 @@
 // ============================================================
 
 // ===================== CONSTANTS =====================
-const KRAKEN_CATEGORIES = [
-    { key: 'K1', letter: 'K', name: 'Caixa', idealMin: 10, idealMax: 15, color: '#A366FF', desc: 'Reserva de emergência e liquidez' },
-    { key: 'R', letter: 'R', name: 'REITs / FIIs', idealMin: 25, idealMax: 25, color: '#E63946', desc: 'Fundos Imobiliários' },
-    { key: 'A', letter: 'A', name: 'Ações BR', idealMin: 25, idealMax: 25, color: '#34D399', desc: 'Ações brasileiras' },
-    { key: 'K2', letter: 'K', name: 'Criptomoedas', idealMin: 1, idealMax: 5, color: '#FFB703', desc: 'Ativos digitais' },
-    { key: 'E', letter: 'E', name: 'Exterior / Stocks', idealMin: 25, idealMax: 25, color: '#FF6B7A', desc: 'Investimentos no exterior' },
-    { key: 'N', letter: 'N', name: 'Negócios', idealMin: 10, idealMax: 15, color: '#F43F5E', desc: 'Negócios e empreendimentos' }
-];
-
 const MONTH_NAMES = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
@@ -70,27 +61,11 @@ function parseCurrencyInput(str) {
     return isNaN(val) ? 0 : val;
 }
 
-function parsePercentInput(str) {
-    if (!str) return 0;
-    let cleaned = str.replace(/[%\s]/g, '').replace(',', '.');
-    const val = parseFloat(cleaned);
-    return isNaN(val) ? 0 : val;
-}
-
 function handleCurrencyInput(input) {
     let raw = input.value.replace(/[^\d]/g, '');
     if (raw === '') { input.value = ''; return; }
     let num = parseInt(raw, 10) / 100;
     input.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function handlePercentInput(input) {
-    let raw = input.value.replace(/[^\d,.-]/g, '');
-    if (raw === '') { input.value = ''; return; }
-    raw = raw.replace(',', '.');
-    let num = parseFloat(raw);
-    if (isNaN(num)) num = 0;
-    input.value = num > 0 ? num.toString() : '';
 }
 
 function monthKey(year, month) {
@@ -150,7 +125,6 @@ function switchTab(tabName) {
     updateTabIndicator();
 
     // Refresh data
-    if (tabName === 'kraken') renderKraken();
     if (tabName === 'metas') renderMetas();
     if (tabName === 'patrimonio') renderProventos();
     if (tabName === 'proventos') renderProventos();
@@ -221,7 +195,6 @@ function initDashboardParticles() {
 
 // ===================== INIT =====================
 function initDashboard() {
-    renderKraken();
     renderMetas();
     renderProventos();
     renderAporte();
@@ -229,7 +202,10 @@ function initDashboard() {
 }
 
 // ============================================================
-// TAB 1: KRAKEN
+// DADOS DE METAS / PATRIMÔNIO
+// (nome "kraken" mantido internamente por compatibilidade com
+// backups já exportados pelos usuários — armazena a Meta de
+// Dividendos, a Meta Patrimonial e o Patrimônio Total)
 // ============================================================
 
 function getKrakenData() {
@@ -243,127 +219,11 @@ function getKrakenData() {
 function saveKrakenData() {
     const data = getKrakenData();
     data.dividendGoal = parseCurrencyInput(document.getElementById('dividendGoal').value);
-    // patrimonioTotal não tem mais campo próprio no formulário — ele é gerido
+    // patrimonioTotal não tem campo próprio no formulário — ele é gerido
     // exclusivamente por syncPatrimonioTotalFromProventos() a partir do Saldo
     // Bruto informado em Proventos, então preservamos o valor já salvo aqui.
     data.projecaoMeta = parseCurrencyInput(document.getElementById('projecaoMeta').value) || 50000;
-
-    KRAKEN_CATEGORIES.forEach(cat => {
-        const applied = document.getElementById(`kraken_applied_${cat.key}`);
-        const ideal = document.getElementById(`kraken_ideal_${cat.key}`);
-        const atual = document.getElementById(`kraken_atual_${cat.key}`);
-        const assets = document.getElementById(`kraken_assets_${cat.key}`);
-        if (applied && ideal && atual) {
-            data.categories[cat.key] = {
-                applied: parseCurrencyInput(applied.value),
-                ideal: parsePercentInput(ideal.value),
-                atual: parsePercentInput(atual.value),
-                assets: assets ? assets.value : ''
-            };
-        }
-    });
-
     saveData('byfinance_kraken', data);
-    updateKrakenCalculations();
-}
-
-function renderKraken() {
-    const data = getKrakenData();
-    const grid = document.getElementById('krakenGrid');
-
-    // Set dividend goal
-    const goalInput = document.getElementById('dividendGoal');
-    if (data.dividendGoal > 0) {
-        goalInput.value = data.dividendGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    } else {
-        goalInput.value = '';
-    }
-    const projecaoInput = document.getElementById('projecaoMeta');
-    if (data.projecaoMeta > 0) {
-        projecaoInput.value = data.projecaoMeta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    } else {
-        projecaoInput.value = '';
-    }
-
-    // Render category cards
-    grid.innerHTML = KRAKEN_CATEGORIES.map(cat => {
-        const catData = data.categories[cat.key] || { applied: 0, ideal: 0, atual: 0, assets: '' };
-        return `
-        <div class="category-card" style="--cat-color: ${cat.color}">
-            <div class="category-header">
-                <div class="kraken-letter-wrap" style="background: ${cat.color}18; color: ${cat.color}">
-                    <span class="kraken-letter">${cat.letter}</span>
-                </div>
-                <div class="category-title-wrap">
-                    <h4 class="category-name">${cat.name}</h4>
-                    <span class="category-desc">${cat.desc}</span>
-                </div>
-            </div>
-            <div class="category-body">
-                <div class="category-inputs">
-                    <div class="input-group">
-                        <label>Valor Aplicado</label>
-                        <div class="input-with-prefix">
-                            <span class="currency-prefix">R$</span>
-                            <input type="text" id="kraken_applied_${cat.key}" class="input-field" placeholder="0,00"
-                                value="${catData.applied > 0 ? catData.applied.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ''}"
-                                oninput="handleCurrencyInput(this); saveKrakenData()">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Ideal %</label>
-                        <div class="input-with-suffix">
-                            <input type="text" id="kraken_ideal_${cat.key}" class="input-field" placeholder="0"
-                                value="${catData.ideal > 0 ? catData.ideal : ''}"
-                                oninput="handlePercentInput(this); saveKrakenData()">
-                            <span class="currency-suffix">%</span>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>% Atual</label>
-                        <div class="input-with-suffix">
-                            <input type="text" id="kraken_atual_${cat.key}" class="input-field" placeholder="0"
-                                value="${catData.atual > 0 ? catData.atual : ''}"
-                                oninput="handlePercentInput(this); saveKrakenData()">
-                            <span class="currency-suffix">%</span>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>Quanto Investir</label>
-                        <div class="input-with-prefix">
-                            <span class="currency-prefix">R$</span>
-                            <input type="text" id="kraken_invest_${cat.key}" class="input-field" placeholder="0,00" disabled
-                                value="R$ 0,00">
-                        </div>
-                    </div>
-                </div>
-                <div class="input-group assets-group">
-                    <label>📋 Ativos</label>
-                    <textarea id="kraken_assets_${cat.key}" class="textarea-field" placeholder="Ex: HCTR11, MXRF11, RECR11..." rows="2"
-                        oninput="saveKrakenData()">${catData.assets || ''}</textarea>
-                </div>
-            </div>
-        </div>`;
-    }).join('');
-
-    updateKrakenCalculations();
-}
-
-function updateKrakenCalculations() {
-    const data = getKrakenData();
-    const patrimonioTotal = data.patrimonioTotal || 0;
-
-    // Update each category
-    KRAKEN_CATEGORIES.forEach(cat => {
-        const cd = data.categories[cat.key] || { applied: 0, ideal: 0, atual: 0 };
-        
-        // Calculate how much to invest based on patrimonio total and ideal %
-        const quantoInvestir = patrimonioTotal > 0 ? (patrimonioTotal * (cd.ideal / 100)) : 0;
-        
-        // Update fields
-        const investEl = document.getElementById(`kraken_invest_${cat.key}`);
-        if (investEl) investEl.value = formatCurrency(quantoInvestir);
-    });
 }
 
 // ============================================================
@@ -374,6 +234,20 @@ function renderMetas() {
     const krakenData = getKrakenData();
     const proventosData = getProventosData();
     const keys = Object.keys(proventosData).sort();
+
+    // Popula os campos de meta a partir do que já foi salvo
+    const goalInput = document.getElementById('dividendGoal');
+    if (goalInput) {
+        goalInput.value = krakenData.dividendGoal > 0
+            ? krakenData.dividendGoal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : '';
+    }
+    const projecaoInput = document.getElementById('projecaoMeta');
+    if (projecaoInput) {
+        projecaoInput.value = krakenData.projecaoMeta > 0
+            ? krakenData.projecaoMeta.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : '';
+    }
 
     // --- Meta de Dividendos Mensais: último mês registrado vs. meta ---
     const divGoal = Number(krakenData.dividendGoal) || 0;
@@ -511,14 +385,13 @@ function savePatrimonioMonth() {
 
     saveData('byfinance_proventos', data);
 
-    // Sincroniza automaticamente o "Patrimônio Total" (usado no Kraken e nas Metas)
+    // Sincroniza automaticamente o "Patrimônio Total" (usado nas Metas)
     // com o Saldo Bruto do mês mais recente informado aqui.
     syncPatrimonioTotalFromProventos(data);
 
     renderProventos();
     renderAporte();
     renderMetas();
-    updateKrakenCalculations();
     showToast('Patrimônio do mês salvo com sucesso!');
 }
 
@@ -1083,7 +956,6 @@ function saveAporteMonth() {
 
     saveData('byfinance_aportes', data);
     renderAporte();
-    updateKrakenCalculations();
     showToast('Aporte salvo com sucesso!');
 }
 
@@ -1315,10 +1187,9 @@ window.addEventListener('DOMContentLoaded', () => {
     initParticles();
     initMouseGlow();
 
-    // Keyboard shortcuts: K, P, A to switch tabs
+    // Keyboard shortcuts: P, A, C to switch tabs
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        if (e.key === 'k' || e.key === 'K') switchTab('kraken');
         if (e.key === 'p' || e.key === 'P') switchTab('proventos');
         if (e.key === 'a' || e.key === 'A') switchTab('aporte');
         if (e.key === 'c' || e.key === 'C') switchTab('calc');
@@ -1330,7 +1201,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 function initMouseGlow() {
     document.getElementById('dashboard').addEventListener('mousemove', e => {
-        for(const card of document.querySelectorAll('.card, .stat-card, .category-card')) {
+        for(const card of document.querySelectorAll('.card, .stat-card')) {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
