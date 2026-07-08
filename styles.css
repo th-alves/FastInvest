@@ -2806,10 +2806,12 @@ ul, ol { list-style: none; }
 }
 
 @media (max-width: 768px) {
-  .calc-common-inputs { padding: var(--space-md); gap: var(--space-md); }
+  .calc-common-inputs { padding: var(--space-md); gap: var(--space-lg); }
   .calc-row,
   .calc-row-3,
-  .calc-row-4         { grid-template-columns: 1fr; }
+  .calc-row-4         { grid-template-columns: 1fr; gap: var(--space-md); }
+  .calc-input-group   { gap: var(--space-sm); }
+  .calc-label         { font-size: var(--font-xs); line-height: 1.4; }
   .calc-average-inner { gap: var(--space-md); }
   .calc-results       { padding: 0 var(--space-md) var(--space-md); }
 }
@@ -2943,18 +2945,16 @@ ul, ol { list-style: none; }
 .gordon-widget {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  margin: 0 var(--space-lg) var(--space-lg);
+  gap: var(--space-lg);
+  margin-top: var(--space-sm);
 }
 
 .gordon-widget-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .gordon-widget-title {
@@ -3147,6 +3147,7 @@ ul, ol { list-style: none; }
   cursor: pointer;
   font-family: var(--font-family);
   transition: border-color var(--duration-base) var(--ease-out);
+  text-overflow: ellipsis;
 }
 
 .gordon-select:hover,
@@ -3281,9 +3282,17 @@ ul, ol { list-style: none; }
 }
 
 @media (max-width: 768px) {
-  .gordon-widget       { margin: 0 var(--space-md) var(--space-md); padding: var(--space-md); }
-  .gordon-line         { flex-wrap: wrap; }
-  .gordon-results      { grid-template-columns: 1fr; }
-  .gordon-select-wrap  { flex: 1 1 100%; width: 100%; }
-  .gordon-rate-display { margin-left: auto; }
+  .gordon-widget        { gap: var(--space-md); }
+  .gordon-line          { flex-direction: column; align-items: flex-start; gap: var(--space-sm); padding: var(--space-md) 0; }
+  .gordon-line-label    { font-size: var(--font-sm); line-height: 1.4; }
+  .gordon-pill-input    { width: 100%; justify-content: space-between; }
+  .gordon-pill-input input { flex: 1; width: auto; }
+  .gordon-pill-readonly { width: 100%; text-align: left; }
+  .gordon-stepper       { width: 100%; justify-content: space-between; }
+  .gordon-stepper button { width: 34px; height: 34px; font-size: 17px; }
+  .gordon-results       { grid-template-columns: 1fr; }
+  .gordon-select-wrap   { flex: 1 1 100%; width: 100%; flex-wrap: wrap; row-gap: var(--space-sm); }
+  .gordon-select        { flex: 1 1 100%; }
+  .gordon-rate-display  { margin-left: 0; font-size: var(--font-md); }
+  .gordon-base-switch   { flex-direction: column; }
 }
