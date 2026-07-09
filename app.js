@@ -129,6 +129,7 @@ function switchTab(tabName) {
     if (tabName === 'patrimonio') renderProventos();
     if (tabName === 'proventos') renderProventos();
     if (tabName === 'aporte') renderAporte();
+    if (tabName === 'ativos') renderAtivos();
     if (tabName === 'calc') { calcLoadState(); calcAll(); }
 }
 
@@ -1016,6 +1017,212 @@ function deleteAporteMonth(key) {
 }
 
 // ============================================================
+// TAB: ATIVOS
+// ============================================================
+let currentAtivosFilter = 'all'; // 'all' | 'FII' | 'Ação'
+let editingAtivoId = null;
+
+function getAtivosData() {
+    return loadData('byfinance_ativos', []);
+}
+
+function saveAtivosData(list) {
+    saveData('byfinance_ativos', list);
+}
+
+// Monta um resumo de exibição a partir do retorno de classificarAtivo()
+function classificarParaExibicao(ticker) {
+    const c = classificarAtivo(ticker);
+
+    if (c.tipo === 'FII') {
+        const segmentoLabel = c.subtipo && c.segmento ? `${c.subtipo} — ${c.segmento}` : (c.subtipo || c.segmento || null);
+        return { tipo: 'FII', segmentoLabel, fonte: c.confianca };
+    }
+    if (c.tipo === 'Ação') {
+        return { tipo: 'Ação', segmentoLabel: c.segmento || null, fonte: c.confianca };
+    }
+    if (c.tipo === 'BDR') {
+        return { tipo: 'BDR', segmentoLabel: c.segmento || null, fonte: c.confianca };
+    }
+    // Não identificado: melhor esforço, deixa tudo pro preenchimento manual
+    return { tipo: null, segmentoLabel: null, fonte: 'desconhecido' };
+}
+
+function handleAtivoTickerInput(input) {
+    input.value = input.value.toUpperCase();
+    const ticker = input.value.trim();
+    const preview = document.getElementById('ativoPreview');
+    const manualWrap = document.getElementById('ativoManualWrap');
+
+    if (!ticker) {
+        preview.style.display = 'none';
+        manualWrap.style.display = 'none';
+        return;
+    }
+
+    const result = classificarParaExibicao(ticker);
+    preview.style.display = 'flex';
+
+    const badgeEl = document.getElementById('ativoPreviewTipo');
+    const segmentoEl = document.getElementById('ativoPreviewSegmento');
+    const fonteEl = document.getElementById('ativoPreviewFonte');
+
+    if (result.tipo) {
+        badgeEl.textContent = result.tipo;
+        badgeEl.className = 'badge ' + (result.tipo === 'FII' ? 'badge-green' : 'badge-blue');
+    } else {
+        badgeEl.textContent = 'A definir';
+        badgeEl.className = 'badge';
+    }
+
+    segmentoEl.textContent = result.segmentoLabel || 'Segmento não identificado';
+
+    const fonteLabels = {
+        base_de_dados: '✓ Base B3',
+        heuristica: 'Tipo estimado pelo ticker',
+        desconhecido: 'Não identificado'
+    };
+    fonteEl.textContent = fonteLabels[result.fonte] || '';
+
+    // Mostra o campo manual sempre que não temos segmento vindo da base de dados
+    manualWrap.style.display = result.segmentoLabel ? 'none' : 'block';
+}
+
+function saveAtivo() {
+    const tickerInput = document.getElementById('ativoTicker');
+    const ticker = tickerInput.value.trim().toUpperCase();
+
+    if (!ticker) {
+        showToast('Informe o ticker do ativo', 'error');
+        return;
+    }
+
+    const quantidadeRaw = document.getElementById('ativoQuantidade').value.trim();
+    const quantidade = quantidadeRaw ? parseInt(quantidadeRaw, 10) : null;
+
+    const result = classificarParaExibicao(ticker);
+    const manualSegmento = document.getElementById('ativoSegmentoManual').value.trim();
+    const tipoFinal = result.tipo || 'Ação'; // melhor esforço quando não identificado
+    const segmentoFinal = result.segmentoLabel || manualSegmento || 'Não informado';
+
+    const list = getAtivosData();
+
+    if (editingAtivoId) {
+        const idx = list.findIndex(a => a.id === editingAtivoId);
+        if (idx !== -1) {
+            list[idx] = { ...list[idx], ticker, tipo: tipoFinal, segmento: segmentoFinal, quantidade };
+        }
+        editingAtivoId = null;
+        document.getElementById('ativoSaveBtn').innerHTML =
+            '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Adicionar Ativo';
+        showToast('Ativo atualizado!');
+    } else {
+        list.push({
+            id: Date.now().toString(),
+            ticker,
+            tipo: tipoFinal,
+            segmento: segmentoFinal,
+            quantidade,
+            dataAdicao: new Date().toISOString()
+        });
+        showToast('Ativo adicionado!');
+    }
+
+    saveAtivosData(list);
+
+    tickerInput.value = '';
+    document.getElementById('ativoQuantidade').value = '';
+    document.getElementById('ativoSegmentoManual').value = '';
+    document.getElementById('ativoPreview').style.display = 'none';
+    document.getElementById('ativoManualWrap').style.display = 'none';
+
+    renderAtivos();
+}
+
+function editAtivo(id) {
+    const list = getAtivosData();
+    const ativo = list.find(a => a.id === id);
+    if (!ativo) return;
+
+    editingAtivoId = id;
+    document.getElementById('ativoTicker').value = ativo.ticker;
+    document.getElementById('ativoQuantidade').value = ativo.quantidade ?? '';
+    document.getElementById('ativoSegmentoManual').value = '';
+    document.getElementById('ativoSaveBtn').innerHTML =
+        '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Atualizar Ativo';
+
+    handleAtivoTickerInput(document.getElementById('ativoTicker'));
+    document.querySelector('#tab-ativos .card-highlight').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function deleteAtivo(id) {
+    showConfirmModal('Deseja realmente excluir este ativo?', () => {
+        const list = getAtivosData().filter(a => a.id !== id);
+        saveAtivosData(list);
+        renderAtivos();
+        showToast('Ativo removido', 'info');
+    });
+}
+
+function setAtivosFilter(filter) {
+    currentAtivosFilter = filter;
+    renderAtivos();
+}
+
+function renderAtivosFilters() {
+    const container = document.getElementById('ativosFilters');
+    if (!container) return;
+
+    const filters = [
+        { id: 'all', label: 'Todos' },
+        { id: 'Ação', label: 'Ações' },
+        { id: 'FII', label: 'FIIs' }
+    ];
+
+    container.innerHTML = filters.map(f =>
+        `<button class="filter-chip${currentAtivosFilter === f.id ? ' active' : ''}"
+            onclick="setAtivosFilter('${f.id}')">${f.label}</button>`
+    ).join('');
+}
+
+function renderAtivos() {
+    renderAtivosFilters();
+
+    const list = getAtivosData();
+    const filtered = currentAtivosFilter === 'all'
+        ? list
+        : list.filter(a => a.tipo === currentAtivosFilter);
+
+    const tbody = document.getElementById('ativosTableBody');
+    const emptyState = document.getElementById('ativosEmpty');
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = '';
+        return;
+    }
+    emptyState.style.display = 'none';
+
+    tbody.innerHTML = filtered
+        .slice()
+        .sort((a, b) => a.ticker.localeCompare(b.ticker))
+        .map(a => `<tr>
+            <td><strong>${a.ticker}</strong></td>
+            <td><span class="badge ${a.tipo === 'FII' ? 'badge-green' : 'badge-blue'}">${a.tipo}</span></td>
+            <td>${a.segmento}</td>
+            <td>${a.quantidade ?? '—'}</td>
+            <td>
+                <button class="btn-icon btn-edit" onclick="editAtivo('${a.id}')" title="Editar">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10.5V12H3.5L10.2 5.3L8.7 3.8L2 10.5ZM11.8 3.7C12 3.5 12 3.2 11.8 3L11 2.2C10.8 2 10.5 2 10.3 2.2L9.5 3L11 4.5L11.8 3.7Z" fill="currentColor"/></svg>
+                </button>
+                <button class="btn-icon btn-delete" onclick="deleteAtivo('${a.id}')" title="Excluir">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 4H11L10.3 12H3.7L3 4ZM5 2H9M2 4H12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </button>
+            </td>
+        </tr>`).join('');
+}
+
+// ============================================================
 // MENU MOBILE
 // ============================================================
 function toggleMenu() {
@@ -1077,6 +1284,7 @@ function exportData() {
         kraken: loadData('byfinance_kraken', {}),
         proventos: loadData('byfinance_proventos', {}),
         aportes: loadData('byfinance_aportes', {}),
+        ativos: loadData('byfinance_ativos', []),
         exportDate: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
@@ -1139,7 +1347,7 @@ function handleImportFile(event) {
             const data = JSON.parse(raw);
 
             // Verificar se é um backup FastInvest válido
-            if (!data.kraken && !data.proventos && !data.aportes) {
+            if (!data.kraken && !data.proventos && !data.aportes && !data.ativos) {
                 showToast('Arquivo não parece ser um backup do FastInvest', 'error');
                 return;
             }
@@ -1147,6 +1355,7 @@ function handleImportFile(event) {
             if (data.kraken)    saveData('byfinance_kraken', data.kraken);
             if (data.proventos) saveData('byfinance_proventos', data.proventos);
             if (data.aportes)   saveData('byfinance_aportes', data.aportes);
+            if (data.ativos)    saveData('byfinance_ativos', data.ativos);
 
             parsed = true;
         } catch (err) {
