@@ -31,8 +31,28 @@ let gordonG = 6;             // crescimento esperado dos dividendos (%)
 let gordonPremium = 2;       // prêmio de risco sobre a taxa base (%)
 let gordonBase = 'tesouro';  // 'tesouro' | 'ifix'
 
-// ===================== STORAGE HELPERS =====================
+// ===================== STORAGE HELPERS (Supabase-backed) =====================
+// appDataCache guarda todos os dados do usuário logado em memória.
+// loadData/saveData mantêm a MESMA assinatura de antes — o resto do app
+// (todas as outras ~20 chamadas) não precisou mudar nada.
+let appDataCache = null;
+let currentUser = null;
+let syncTimeout = null;
+
+const KEY_TO_COLUMN = {
+    byfinance_kraken: 'kraken',
+    byfinance_proventos: 'proventos',
+    byfinance_aportes: 'aportes',
+    byfinance_ativos: 'ativos',
+    byfinance_calc: 'calc'
+};
+
 function loadData(key, fallback) {
+    const column = KEY_TO_COLUMN[key];
+    if (appDataCache && column && appDataCache[column] !== undefined && appDataCache[column] !== null) {
+        return appDataCache[column];
+    }
+    // Sem sessão carregada ainda (ou chave fora do mapeamento): usa o cache local como fallback
     try {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : fallback;
@@ -40,7 +60,173 @@ function loadData(key, fallback) {
 }
 
 function saveData(key, data) {
+    // Espelho local: mantém o app utilizável mesmo se a rede cair no meio do uso
     localStorage.setItem(key, JSON.stringify(data));
+
+    const column = KEY_TO_COLUMN[key];
+    if (appDataCache && column) {
+        appDataCache[column] = data;
+        scheduleCloudSync();
+    }
+}
+
+function scheduleCloudSync() {
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(syncToCloud, 700);
+}
+
+async function syncToCloud() {
+    if (!supabaseClient || !currentUser || !appDataCache) return;
+    try {
+        const { error } = await supabaseClient
+            .from('dados_usuario')
+            .update({
+                kraken: appDataCache.kraken,
+                proventos: appDataCache.proventos,
+                aportes: appDataCache.aportes,
+                ativos: appDataCache.ativos,
+                calc: appDataCache.calc
+            })
+            .eq('user_id', currentUser.id);
+        if (error) {
+            console.error('Erro ao sincronizar com a nuvem:', error);
+            showToast('Falha ao sincronizar — verifique sua conexão', 'error');
+        }
+    } catch (err) {
+        console.error('Erro ao sincronizar com a nuvem:', err);
+    }
+}
+
+// ===================== AUTENTICAÇÃO =====================
+let isSignupMode = false;
+
+function toggleAuthMode() {
+    isSignupMode = !isSignupMode;
+    document.getElementById('authConfirmWrap').style.display = isSignupMode ? 'block' : 'none';
+    document.getElementById('authTitle').textContent = isSignupMode ? 'Criar sua conta' : 'Entrar na sua conta';
+    document.getElementById('authSubmitLabel').textContent = isSignupMode ? 'Criar conta' : 'Entrar';
+    document.getElementById('authToggleQuestion').textContent = isSignupMode ? 'Já tem conta?' : 'Ainda não tem conta?';
+    document.getElementById('authToggleBtn').textContent = isSignupMode ? 'Entrar' : 'Criar conta';
+    document.getElementById('authError').style.display = 'none';
+}
+
+function showAuthError(msg) {
+    const el = document.getElementById('authError');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+function traduzErroSupabase(msg) {
+    if (!msg) return 'Ocorreu um erro. Tente novamente.';
+    if (msg.includes('Invalid login credentials')) return 'E-mail ou senha incorretos.';
+    if (msg.includes('already registered') || msg.includes('already been registered')) return 'Este e-mail já está cadastrado.';
+    if (msg.includes('Password should be')) return 'A senha precisa ter pelo menos 6 caracteres.';
+    if (msg.includes('Unable to validate email')) return 'E-mail inválido.';
+    return msg;
+}
+
+async function handleAuthSubmit() {
+    if (!supabaseClient) {
+        showAuthError('Supabase não configurado. Preencha o arquivo supabase-config.js com as chaves do seu projeto.');
+        return;
+    }
+
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const btn = document.getElementById('authSubmitBtn');
+
+    document.getElementById('authError').style.display = 'none';
+
+    if (!email || !password) {
+        showAuthError('Preencha e-mail e senha.');
+        return;
+    }
+    if (isSignupMode) {
+        const confirm = document.getElementById('authPasswordConfirm').value;
+        if (password !== confirm) {
+            showAuthError('As senhas não coincidem.');
+            return;
+        }
+        if (password.length < 6) {
+            showAuthError('A senha precisa ter pelo menos 6 caracteres.');
+            return;
+        }
+    }
+
+    btn.disabled = true;
+    try {
+        if (isSignupMode) {
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) throw error;
+            if (data.session) {
+                await onAuthSuccess(data.session.user);
+            } else {
+                showAuthError('Conta criada! Verifique seu e-mail para confirmar antes de entrar.');
+            }
+        } else {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            await onAuthSuccess(data.user);
+        }
+    } catch (err) {
+        showAuthError(traduzErroSupabase(err.message));
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function onAuthSuccess(user) {
+    currentUser = user;
+    await fetchAndCacheUserData();
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('landing').classList.remove('hidden');
+}
+
+async function fetchAndCacheUserData() {
+    const { data, error } = await supabaseClient
+        .from('dados_usuario')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+        showToast('Erro ao carregar seus dados da nuvem', 'error');
+        appDataCache = { kraken: {}, proventos: {}, aportes: {}, ativos: [], calc: {} };
+        return;
+    }
+
+    if (data) {
+        appDataCache = data;
+    } else {
+        // Primeiro acesso: cria a linha do usuário com valores padrão
+        appDataCache = { kraken: {}, proventos: {}, aportes: {}, ativos: [], calc: {} };
+        const { error: insertError } = await supabaseClient
+            .from('dados_usuario')
+            .insert({ user_id: currentUser.id, ...appDataCache });
+        if (insertError) console.error('Erro ao criar registro inicial:', insertError);
+    }
+}
+
+function handleLogout() {
+    showConfirmModal('Deseja realmente sair da sua conta?', async () => {
+        await supabaseClient.auth.signOut();
+        currentUser = null;
+        appDataCache = null;
+        location.reload();
+    });
+}
+
+async function initAuthGate() {
+    if (!supabaseClient) {
+        showAuthError('Configure o arquivo supabase-config.js com as chaves do seu projeto Supabase antes de usar o app (veja instruções no próprio arquivo).');
+        return;
+    }
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user) {
+        await onAuthSuccess(session.user);
+    }
+    // Sem sessão: a tela de autenticação já é a visível por padrão.
 }
 
 // ===================== FORMATTING =====================
@@ -1392,9 +1578,15 @@ window.addEventListener('resize', () => {
 
 // Init on load
 window.addEventListener('DOMContentLoaded', () => {
+    initAuthGate();
     initTheme();
     initParticles();
     initMouseGlow();
+
+    ['authEmail', 'authPassword', 'authPasswordConfirm'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') handleAuthSubmit(); });
+    });
 
     // Keyboard shortcuts: P, A, C to switch tabs
     document.addEventListener('keydown', e => {
