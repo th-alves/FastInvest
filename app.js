@@ -103,10 +103,12 @@ let isSignupMode = false;
 function toggleAuthMode() {
     isSignupMode = !isSignupMode;
     document.getElementById('authConfirmWrap').style.display = isSignupMode ? 'block' : 'none';
-    document.getElementById('authTitle').textContent = isSignupMode ? 'Criar sua conta' : 'Entrar na sua conta';
+    document.getElementById('authTitle').textContent = isSignupMode ? 'Criar sua conta' : 'Bem-vindo de volta';
+    document.getElementById('authSubtitle').textContent = isSignupMode ? 'Comece a organizar seus investimentos' : 'Entre na sua conta para continuar';
     document.getElementById('authSubmitLabel').textContent = isSignupMode ? 'Criar conta' : 'Entrar';
-    document.getElementById('authToggleQuestion').textContent = isSignupMode ? 'Já tem conta?' : 'Ainda não tem conta?';
-    document.getElementById('authToggleBtn').textContent = isSignupMode ? 'Entrar' : 'Criar conta';
+    document.getElementById('authToggleQuestion').textContent = isSignupMode ? 'Já tem conta?' : 'Não tem conta?';
+    document.getElementById('authToggleBtn').textContent = isSignupMode ? 'Entrar' : 'Criar agora';
+    document.getElementById('authForgotBtn').style.visibility = isSignupMode ? 'hidden' : 'visible';
     document.getElementById('authError').style.display = 'none';
 }
 
@@ -178,8 +180,59 @@ async function handleAuthSubmit() {
 async function onAuthSuccess(user) {
     currentUser = user;
     await fetchAndCacheUserData();
-    document.getElementById('authScreen').classList.add('hidden');
-    document.getElementById('landing').classList.remove('hidden');
+    enterAppFromAuth();
+}
+
+function enterAppFromAuth() {
+    const authScreen = document.getElementById('authScreen');
+    const dashboard = document.getElementById('dashboard');
+
+    authScreen.classList.add('hidden');
+    setTimeout(() => {
+        dashboard.classList.add('active');
+        document.body.classList.add('dashboard-active');
+        initDashboardParticles('dashboardParticles');
+        initDashboard();
+    }, 350);
+}
+
+async function handleGoogleLogin() {
+    if (!supabaseClient) {
+        showAuthError('Supabase não configurado. Preencha o arquivo supabase-config.js com as chaves do seu projeto.');
+        return;
+    }
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+    });
+    if (error) showAuthError(traduzErroSupabase(error.message));
+}
+
+function toggleAuthPasswordVisibility(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btnEl.classList.toggle('active', input.type === 'text');
+}
+
+async function handleForgotPassword() {
+    if (!supabaseClient) {
+        showAuthError('Supabase não configurado.');
+        return;
+    }
+    const email = document.getElementById('authEmail').value.trim();
+    if (!email) {
+        showAuthError('Digite seu e-mail no campo acima e clique em "Esqueceu?" de novo.');
+        return;
+    }
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+    });
+    if (error) {
+        showAuthError(traduzErroSupabase(error.message));
+    } else {
+        document.getElementById('authError').style.display = 'none';
+        showToast('Enviamos um link de redefinição para seu e-mail');
+    }
 }
 
 async function fetchAndCacheUserData() {
@@ -267,32 +320,7 @@ function monthLabelShort(year, month) {
 }
 
 // ===================== NAVIGATION =====================
-function enterDashboard() {
-    const landing = document.getElementById('landing');
-    const dashboard = document.getElementById('dashboard');
-
-    landing.classList.add('hidden');
-    // Wait for the transition to complete before showing dashboard
-    setTimeout(() => {
-        dashboard.classList.add('active');
-        document.body.classList.add('dashboard-active');
-        initDashboardParticles();
-        initDashboard();
-    }, 350);
-}
-
-function goToLanding() {
-    const dashboard = document.getElementById('dashboard');
-    const landing = document.getElementById('landing');
-
-    dashboard.classList.remove('active');
-    document.body.classList.remove('dashboard-active');
-
-    // Small delay to let dashboard fade out
-    setTimeout(() => {
-        landing.classList.remove('hidden');
-    }, 100);
-}
+// (entrada no app agora é feita via enterAppFromAuth(), disparada pelo login)
 
 function switchTab(tabName) {
     // Update buttons
@@ -339,32 +367,23 @@ function showToast(msg, type = 'success') {
 }
 
 // ===================== PARTICLES =====================
-function initParticles() {
-    const container = document.getElementById('particles');
-    if (!container) return;
-
-    for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = (40 + Math.random() * 60) + '%';
-        particle.style.animationDelay = (Math.random() * 6) + 's';
-        particle.style.animationDuration = (3 + Math.random() * 4) + 's';
-        particle.style.opacity = 0;
-        container.appendChild(particle);
-    }
-}
-
-function initDashboardParticles() {
-    const container = document.getElementById('dashboardParticles');
+function initDashboardParticles(containerId = 'dashboardParticles') {
+    const container = document.getElementById(containerId);
     if (!container || container.children.length > 0) return; // avoid re-spawn
+
+    // No dashboard, o container cobre a tela inteira e tem um card central,
+    // então as partículas ficam concentradas nas bordas pra não "sujar" o card.
+    // Na tela de login, o container #authParticles já é só o painel esquerdo
+    // (sem card no meio), então espalha por toda a largura dele.
+    const fullSpread = containerId === 'authParticles';
 
     for (let i = 0; i < 20; i++) {
         const p = document.createElement('div');
         p.className = 'd-particle';
 
-        // Bias particles to left and right edges (outside card area)
-        const side = i < 10 ? Math.random() * 16 : 84 + Math.random() * 16;
+        const side = fullSpread
+            ? Math.random() * 100
+            : (i < 10 ? Math.random() * 16 : 84 + Math.random() * 16);
         p.style.left = side + '%';
 
         p.style.bottom = -(Math.random() * 20) + '%';
@@ -1580,7 +1599,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('DOMContentLoaded', () => {
     initAuthGate();
     initTheme();
-    initParticles();
+    initDashboardParticles('authParticles');
     initMouseGlow();
 
     ['authEmail', 'authPassword', 'authPasswordConfirm'].forEach(id => {
@@ -1637,9 +1656,11 @@ function toggleTheme() {
         localStorage.setItem('byfinance_theme', 'light');
         updateThemeMeta('light');
     }
-    // Re-render chart with new theme colors
-    const data = getProventosData();
-    renderProventosPieChart(data);
+    // Re-render chart with new theme colors (só se o dashboard já estiver montado)
+    if (document.getElementById('proventosChart')) {
+        const data = getProventosData();
+        renderProventosPieChart(data);
+    }
 }
 
 function updateThemeMeta(theme) {

@@ -15,16 +15,14 @@
 </head>
 <body>
     <!-- ========== TELA DE AUTENTICAÇÃO ========== -->
-    <section id="authScreen" class="auth-screen">
-        <div class="auth-bg-grid"></div>
-        <div class="auth-orbs">
-            <div class="orb orb-1"></div>
-            <div class="orb orb-2"></div>
-        </div>
-        <div class="auth-card">
-            <div class="landing-logo auth-logo">
-                <div class="logo-icon">
-                    <svg width="44" height="44" viewBox="0 0 56 56" fill="none">
+    <section id="authScreen" class="auth-screen auth-split">
+        <!-- ===== Painel esquerdo: apresentação ===== -->
+        <div class="auth-hero">
+            <div class="dashboard-particles" id="authParticles"></div>
+
+            <div class="auth-hero-brand">
+                <div class="logo-icon auth-logo-icon">
+                    <svg width="30" height="30" viewBox="0 0 56 56" fill="none">
                         <rect x="2" y="2" width="52" height="52" rx="14" stroke="url(#logoGradAuth)" stroke-width="2.5" fill="none"/>
                         <path d="M16 40V26L22 18L28 28L34 16L42 22" stroke="url(#logoGradAuth)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                         <circle cx="16" cy="40" r="3" fill="#E63946"/>
@@ -40,102 +38,112 @@
                         </defs>
                     </svg>
                 </div>
-                <h1 class="logo-text auth-logo-text">Fast<span class="logo-highlight">Invest</span></h1>
+                <span class="auth-brand-text">Fast<strong>Invest</strong></span>
             </div>
 
-            <h2 class="auth-title" id="authTitle">Entrar na sua conta</h2>
-            <p class="auth-subtitle" id="authSubtitle">Seus dados sincronizados em qualquer dispositivo.</p>
+            <div class="auth-hero-content">
+                <h1 class="auth-hero-title">Seus investimentos,<br><span class="auth-hero-highlight">finalmente organizados.</span></h1>
+                <p class="auth-hero-subtitle">Acompanhe ações, FIIs, proventos e aportes — com classificação automática de ativos direto da B3.</p>
 
-            <div class="input-group">
-                <label>E-mail</label>
-                <input type="email" id="authEmail" class="input-field" placeholder="voce@email.com" autocomplete="email">
-            </div>
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" id="authPassword" class="input-field" placeholder="••••••••" autocomplete="current-password">
-            </div>
-            <div class="input-group" id="authConfirmWrap" style="display:none">
-                <label>Confirmar senha</label>
-                <input type="password" id="authPasswordConfirm" class="input-field" placeholder="••••••••" autocomplete="new-password">
-            </div>
+                <ul class="auth-hero-features">
+                    <li>
+                        <span class="auth-hero-feature-icon" style="--icon-color: var(--primary)">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.4"/></svg>
+                        </span>
+                        Classificação automática de Ações e FIIs
+                    </li>
+                    <li>
+                        <span class="auth-hero-feature-icon" style="--icon-color: var(--accent)">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v6l4 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/></svg>
+                        </span>
+                        Sincronizado na nuvem, em qualquer aparelho
+                    </li>
+                    <li>
+                        <span class="auth-hero-feature-icon" style="--icon-color: var(--accent-2)">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2.5L14 6.5V13.5H2V6.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M6 13.5V9.5H10V13.5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                        </span>
+                        Controle de proventos e aportes mensais
+                    </li>
+                </ul>
 
-            <p class="auth-error" id="authError" style="display:none"></p>
-
-            <button class="btn-primary btn-lg auth-submit-btn" id="authSubmitBtn" onclick="handleAuthSubmit()">
-                <span id="authSubmitLabel">Entrar</span>
-            </button>
-
-            <p class="auth-toggle-text">
-                <span id="authToggleQuestion">Ainda não tem conta?</span>
-                <button class="auth-toggle-link" id="authToggleBtn" onclick="toggleAuthMode()">Criar conta</button>
-            </p>
-        </div>
-    </section>
-
-    <!-- ==================== LANDING PAGE ==================== -->
-    <section id="landing" class="landing-page hidden">
-        <!-- Theme Toggle on Landing -->
-        <button class="theme-toggle landing-theme-toggle" id="landingThemeToggle" onclick="toggleTheme()" title="Alternar tema">
-            <svg class="icon-sun" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M10 2V4M10 16V18M2 10H4M16 10H18M4.93 4.93L6.34 6.34M13.66 13.66L15.07 15.07M4.93 15.07L6.34 13.66M13.66 6.34L15.07 4.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <svg class="icon-moon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M17 11.5A7.5 7.5 0 018.5 3c0-.82.13-1.6.37-2.34A8 8 0 1018.34 11.13c-.43.24-.88.37-1.34.37z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-        <div class="landing-bg-grid"></div>
-        <div class="landing-orbs">
-            <div class="orb orb-1"></div>
-            <div class="orb orb-2"></div>
-            <div class="orb orb-3"></div>
-        </div>
-        <div class="landing-particles" id="particles"></div>
-        <div class="landing-content">
-            <div class="landing-logo">
-                <div class="logo-icon">
-                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                        <rect x="2" y="2" width="52" height="52" rx="14" stroke="url(#logoGrad)" stroke-width="2.5" fill="none"/>
-                        <path d="M16 40V26L22 18L28 28L34 16L42 22" stroke="url(#logoGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                        <circle cx="16" cy="40" r="3" fill="#E63946"/>
-                        <circle cx="22" cy="18" r="3" fill="#FF5C6B"/>
-                        <circle cx="28" cy="28" r="3" fill="#FFB703"/>
-                        <circle cx="34" cy="16" r="3" fill="#FFC94D"/>
-                        <circle cx="42" cy="22" r="3" fill="#A366FF"/>
-                        <defs>
-                            <linearGradient id="logoGrad" x1="0" y1="0" x2="56" y2="56">
-                                <stop stop-color="#E63946"/>
-                                <stop offset="1" stop-color="#FFB703"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
+                <div class="auth-hero-stats">
+                    <div class="auth-hero-stat"><strong>395+</strong><span>Ativos mapeados</span></div>
+                    <div class="auth-hero-stat"><strong>B3</strong><span>Ações & FIIs</span></div>
+                    <div class="auth-hero-stat"><strong>100%</strong><span>Sincronizado</span></div>
                 </div>
-                <h1 class="logo-text">Fast<span class="logo-highlight">Invest</span></h1>
             </div>
-            <p class="landing-tagline">Controle inteligente dos seus investimentos.</p>
-            <p class="landing-subtitle">Acompanhe seu patrimônio, proventos e planeje seus aportes mensais — tudo em um só lugar.</p>
-            <button id="btnEntrar" class="btn-primary btn-lg" onclick="enterDashboard()">
-                <span>Acessar Dashboard</span>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <p class="auth-hero-footer">© 2026 FastInvest</p>
+        </div>
+
+        <!-- ===== Painel direito: formulário ===== -->
+        <div class="auth-form-panel">
+            <button class="theme-toggle auth-theme-toggle" id="authThemeToggle" onclick="toggleTheme()" title="Alternar tema">
+                <svg class="icon-sun" width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M10 2V4M10 16V18M2 10H4M16 10H18M4.93 4.93L6.34 6.34M13.66 13.66L15.07 15.07M4.93 15.07L6.34 13.66M13.66 6.34L15.07 4.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <svg class="icon-moon" width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path d="M17 11.5A7.5 7.5 0 018.5 3c0-.82.13-1.6.37-2.34A8 8 0 1018.34 11.13c-.43.24-.88.37-1.34.37z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
-            <div class="landing-features">
-                <div class="feature-pill">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v6l4 2" stroke="#E63946" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6.5" stroke="#E63946" stroke-width="1.5"/></svg>
-                    <span>Sincronizado na Nuvem</span>
+
+            <div class="auth-form-wrap">
+                <h2 class="auth-title" id="authTitle">Bem-vindo de volta</h2>
+                <p class="auth-subtitle" id="authSubtitle">Entre na sua conta para continuar</p>
+
+                <button class="btn-google" id="btnGoogleLogin" onclick="handleGoogleLogin()">
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.87 2.7-6.62z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.98v2.33A9 9 0 009 18z"/>
+                        <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 013.68 9c0-.59.1-1.17.27-1.7V4.97H.98A9 9 0 000 9c0 1.45.35 2.83.98 4.03l2.97-2.33z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 00.98 4.97l2.97 2.33C4.66 5.17 6.65 3.58 9 3.58z"/>
+                    </svg>
+                    <span>Continuar com Google</span>
+                </button>
+
+                <div class="auth-divider"><span>ou</span></div>
+
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12v8H2V4z" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4.5L8 8.5L13.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <input type="email" id="authEmail" class="input-field auth-input-with-icon" placeholder="voce@email.com" autocomplete="email">
+                    </div>
                 </div>
-                <div class="feature-pill">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="3" stroke="#FFB703" stroke-width="1.5"/><path d="M5 8L7 10L11 6" stroke="#FFB703" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Dados Locais</span>
+                <div class="input-group">
+                    <div class="auth-label-row">
+                        <label>Senha</label>
+                        <button type="button" class="auth-forgot-link" id="authForgotBtn" onclick="handleForgotPassword()">Esqueceu?</button>
+                    </div>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3.5" y="7" width="9" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V4.8a2.5 2.5 0 015 0V7" stroke="currentColor" stroke-width="1.3"/></svg>
+                        <input type="password" id="authPassword" class="input-field auth-input-with-icon auth-input-with-eye" placeholder="••••••••" autocomplete="current-password">
+                        <button type="button" class="auth-eye-toggle" onclick="toggleAuthPasswordVisibility('authPassword', this)" title="Mostrar/ocultar senha">
+                            <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="10" r="2.3" stroke="currentColor" stroke-width="1.4"/></svg>
+                        </button>
+                    </div>
                 </div>
-                <div class="feature-pill">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2.5L14 6.5V13.5H2V6.5Z" stroke="#A366FF" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 13.5V9.5H10V13.5" stroke="#A366FF" stroke-width="1.5" stroke-linejoin="round"/></svg>
-                    <span>Controle Patrimonial</span>
+                <div class="input-group" id="authConfirmWrap" style="display:none">
+                    <label>Confirmar senha</label>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3.5" y="7" width="9" height="6.5" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V4.8a2.5 2.5 0 015 0V7" stroke="currentColor" stroke-width="1.3"/></svg>
+                        <input type="password" id="authPasswordConfirm" class="input-field auth-input-with-icon" placeholder="••••••••" autocomplete="new-password">
+                    </div>
                 </div>
+
+                <p class="auth-error" id="authError" style="display:none"></p>
+
+                <button class="btn-primary btn-lg auth-submit-btn" id="authSubmitBtn" onclick="handleAuthSubmit()">
+                    <span id="authSubmitLabel">Entrar</span>
+                </button>
+
+                <p class="auth-toggle-text">
+                    <span id="authToggleQuestion">Não tem conta?</span>
+                    <button class="auth-toggle-link" id="authToggleBtn" onclick="toggleAuthMode()">Criar agora</button>
+                </p>
             </div>
         </div>
-        <div class="landing-bottom-fade"></div>
     </section>
 
     <!-- ==================== DASHBOARD ==================== -->
@@ -146,7 +154,7 @@
         <header class="dashboard-header">
             <div class="header-inner">
                 <!-- Logo (left on desktop, centered on mobile) -->
-                <div class="header-logo" onclick="goToLanding()" title="Voltar à página inicial">
+                <div class="header-logo" onclick="switchTab('patrimonio')" title="Início">
                     <svg width="28" height="28" viewBox="0 0 56 56" fill="none">
                         <rect x="2" y="2" width="52" height="52" rx="14" stroke="url(#logoGrad2)" stroke-width="2.5" fill="none"/>
                         <path d="M16 40V26L22 18L28 28L34 16L42 22" stroke="url(#logoGrad2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
