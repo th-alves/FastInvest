@@ -280,6 +280,13 @@ async function initAuthGate() {
         await onAuthSuccess(session.user);
     }
     // Sem sessão: a tela de autenticação já é a visível por padrão.
+
+    // O Supabase processa o token de acesso que vem no #hash (login com
+    // Google ou confirmação de e-mail), mas costuma deixar um "#" solto
+    // na barra de endereço depois. Limpa isso sempre, com ou sem sessão.
+    if (window.location.hash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
 }
 
 // ===================== FORMATTING =====================
@@ -1438,151 +1445,24 @@ function toggleMenu() {
     dropdown.classList.toggle('open');
 }
 
-function toggleImportExportMenu() {
-    const dropdown = document.getElementById('menuDropdownDesktop');
-    const button = document.getElementById('btnImportExport');
-    const isOpen = dropdown.classList.contains('open');
-    
-    if (isOpen) {
-        dropdown.classList.remove('open');
-        button.classList.remove('active');
-    } else {
-        dropdown.classList.add('open');
-        button.classList.add('active');
-    }
-}
-
-function closeImportExportMenu() {
-    const dropdown = document.getElementById('menuDropdownDesktop');
-    const button = document.getElementById('btnImportExport');
-    if (dropdown) dropdown.classList.remove('open');
-    if (button) button.classList.remove('active');
-}
-
-// Fechar os menus ao clicar fora
+// Fechar o menu mobile ao clicar fora do hamburguer e do dropdown
 document.addEventListener('click', function(event) {
     const hamburger = document.getElementById('menuHamburger');
     const dropdown = document.getElementById('menuDropdown');
-    const btnImportExport = document.getElementById('btnImportExport');
-    const dropdownDesktop = document.getElementById('menuDropdownDesktop');
-    const importExportContainer = document.getElementById('importExportContainer');
-    
-    // Fechar menu móvel ao clicar fora do hamburguer e do dropdown
+
     if (hamburger && dropdown) {
         if (!hamburger.contains(event.target) && !dropdown.contains(event.target)) {
             hamburger.classList.remove('active');
             dropdown.classList.remove('open');
         }
     }
-    
-    // Fechar menu desktop ao clicar fora do container inteiro (botão + dropdown)
-    if (importExportContainer && !importExportContainer.contains(event.target)) {
-        closeImportExportMenu();
-    }
 });
-
-// ============================================================
-// IMPORT / EXPORT
-// ============================================================
-function exportData() {
-    const allData = {
-        kraken: loadData('byfinance_kraken', {}),
-        proventos: loadData('byfinance_proventos', {}),
-        aportes: loadData('byfinance_aportes', {}),
-        ativos: loadData('byfinance_ativos', []),
-        exportDate: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `byfinance_backup_${new Date().toISOString().slice(0, 10)}.json`;
-    // Necessário adicionar ao DOM para funcionar em iOS/Safari mobile
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Dados exportados com sucesso!');
-}
-
-function importData() {
-    // Fechar ambos os menus antes de acionar o file input
-    // O setTimeout garante que o menu feche primeiro e o browser
-    // trate o .click() como evento direto de usuário (necessário em mobile)
-    closeMenu();
-    closeImportExportMenu();
-    setTimeout(() => {
-        document.getElementById('importFileInput').click();
-    }, 150);
-}
 
 function closeMenu() {
     const hamburger = document.getElementById('menuHamburger');
     const dropdown = document.getElementById('menuDropdown');
     if (hamburger) hamburger.classList.remove('active');
     if (dropdown) dropdown.classList.remove('open');
-}
-
-function handleImportFile(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Validação básica antes de ler
-    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
-        showToast('Selecione um arquivo .json válido', 'error');
-        event.target.value = '';
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function (e) {
-        // Resetar o input APÓS a leitura concluir (não antes — mobile cancela a leitura)
-        event.target.value = '';
-
-        let parsed = null;
-
-        try {
-            const raw = e.target.result;
-            if (!raw || raw.trim() === '') {
-                showToast('Arquivo vazio ou inválido', 'error');
-                return;
-            }
-
-            const data = JSON.parse(raw);
-
-            // Verificar se é um backup FastInvest válido
-            if (!data.kraken && !data.proventos && !data.aportes && !data.ativos) {
-                showToast('Arquivo não parece ser um backup do FastInvest', 'error');
-                return;
-            }
-
-            if (data.kraken)    saveData('byfinance_kraken', data.kraken);
-            if (data.proventos) saveData('byfinance_proventos', data.proventos);
-            if (data.aportes)   saveData('byfinance_aportes', data.aportes);
-            if (data.ativos)    saveData('byfinance_ativos', data.ativos);
-
-            parsed = true;
-        } catch (err) {
-            console.error('Erro ao importar:', err);
-            showToast('Erro ao ler o arquivo. Verifique se é um JSON válido.', 'error');
-            return;
-        }
-
-        // initDashboard fora do try/catch — erros de renderização (canvas, etc.)
-        // não devem aparecer como "erro ao importar"
-        if (parsed) {
-            showToast('Dados importados com sucesso!');
-            setTimeout(() => initDashboard(), 100);
-        }
-    };
-
-    reader.onerror = function () {
-        event.target.value = '';
-        showToast('Não foi possível ler o arquivo', 'error');
-    };
-
-    reader.readAsText(file, 'UTF-8');
 }
 
 // ============================================================
@@ -1774,7 +1654,7 @@ function showConfirmModal(message, onConfirm) {
                 <p class="confirm-modal-msg" id="confirmModalMsg"></p>
                 <div class="confirm-modal-actions">
                     <button class="btn-secondary" onclick="document.getElementById('confirmModal').style.display='none'">Cancelar</button>
-                    <button class="btn-danger" id="confirmModalOk">Excluir</button>
+                    <button class="btn-danger" id="confirmModalOk">Sair</button>
                 </div>
             </div>`;
         document.body.appendChild(modal);

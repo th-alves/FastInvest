@@ -203,10 +203,11 @@
                     </nav>
 
                     <!-- Sair (logout) -->
-                    <button class="theme-toggle" id="btnLogout" onclick="handleLogout()" title="Sair da conta">
-                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <button class="btn-logout" id="btnLogout" onclick="handleLogout()" title="Sair da conta">
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                             <path d="M7.5 17.5H4a1 1 0 01-1-1v-13a1 1 0 011-1h3.5M13.5 14L17.5 10L13.5 6M17.5 10H7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
+                        <span>Sair</span>
                     </button>
 
                     <!-- Theme Toggle -->
@@ -220,27 +221,6 @@
                         </svg>
                     </button>
 
-                    <!-- Botão Importar/Exportar Desktop + Dropdown -->
-                    <div class="import-export-container" id="importExportContainer">
-                        <button class="btn-import-export" id="btnImportExport" onclick="toggleImportExportMenu()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                <path d="M7 10L12 5L17 10M12 5V14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M3 18H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                                <path d="M7 14L12 19L17 14M12 19V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span class="btn-text">Dados</span>
-                        </button>
-                        <div class="menu-dropdown-desktop" id="menuDropdownDesktop">
-                            <button class="menu-item" onclick="exportData(); closeImportExportMenu()">
-                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 3V11M9 11L6 8M9 11L12 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                <span>Exportar Backup</span>
-                            </button>
-                            <button class="menu-item" onclick="importData(); closeImportExportMenu()">
-                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 11V3M9 3L6 6M9 3L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                <span>Importar Backup</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Menu Hamburguer Mobile only -->
@@ -292,14 +272,11 @@
                         <span class="menu-theme-label">Alternar tema</span>
                     </button>
                     <div class="menu-divider"></div>
-                    <!-- Data actions -->
-                    <button class="menu-item" onclick="exportData(); closeMenu()">
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 3V11M9 11L6 8M9 11L12 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Exportar dados</span>
-                    </button>
-                    <button class="menu-item" onclick="importData()">
-                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 12V14C3 14.55 3.45 15 4 15H14C14.55 15 15 14.55 15 14V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M9 11V3M9 3L6 6M9 3L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        <span>Importar dados</span>
+                    <button class="menu-item menu-item-logout" onclick="handleLogout(); closeMenu()">
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 17.5H4a1 1 0 01-1-1v-13a1 1 0 011-1h3.5M13.5 14L17.5 10L13.5 6M17.5 10H7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Sair da conta</span>
                     </button>
                 </div>
             </div>
@@ -1011,7 +988,6 @@
     </div>
 
     <!-- Hidden file input for import -->
-    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(event)">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="supabase-config.js"></script>
