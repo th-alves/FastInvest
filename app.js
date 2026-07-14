@@ -267,7 +267,7 @@ function handleLogout() {
         currentUser = null;
         appDataCache = null;
         location.reload();
-    });
+    }, 'Sair');
 }
 
 async function initAuthGate() {
@@ -1643,7 +1643,7 @@ function updateProjectionAndYoY(data) {
     }
 }
 
-function showConfirmModal(message, onConfirm) {
+function showConfirmModal(message, onConfirm, confirmLabel = 'Excluir') {
     let modal = document.getElementById('confirmModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -1654,13 +1654,17 @@ function showConfirmModal(message, onConfirm) {
                 <p class="confirm-modal-msg" id="confirmModalMsg"></p>
                 <div class="confirm-modal-actions">
                     <button class="btn-secondary" onclick="document.getElementById('confirmModal').style.display='none'">Cancelar</button>
-                    <button class="btn-danger" id="confirmModalOk">Sair</button>
+                    <button class="btn-danger" id="confirmModalOk"></button>
                 </div>
             </div>`;
         document.body.appendChild(modal);
         modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
     }
     document.getElementById('confirmModalMsg').textContent = message;
+    // O texto do botão é sempre definido aqui, a cada chamada — nunca fica
+    // "herdado" de um uso anterior (ex.: logout definindo "Sair" e uma
+    // exclusão posterior aparecendo com o texto errado).
+    document.getElementById('confirmModalOk').textContent = confirmLabel;
     document.getElementById('confirmModalOk').onclick = () => { modal.style.display = 'none'; onConfirm(); };
     modal.style.display = 'flex';
 }
