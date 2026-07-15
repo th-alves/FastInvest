@@ -380,8 +380,9 @@
                     </div>
                 </div>
 
-                <!-- Summary Cards -->
-                <div class="stats-row stats-row-2">
+                <!-- Summary Cards (bento: Ganho de Capital + Projeção empilhados à
+                     esquerda, Performance como bloco mais "quadrado" à direita) -->
+                <div class="patrimonio-summary-row">
                     <div class="stat-card">
                         <span class="stat-label">Ganho de Capital</span>
                         <span class="stat-value" id="proventosCapitalGain">R$ 0,00</span>
@@ -391,11 +392,7 @@
                         <span class="stat-label">Performance</span>
                         <span class="stat-value" id="lastPerformance">0,00%</span>
                     </div>
-                </div>
-
-                <!-- Projection row -->
-                <div class="stats-row stats-row-1" id="projectionRowPatrimonio" style="display:none">
-                    <div class="stat-card stat-card-sm">
+                    <div class="stat-card stat-card-sm" id="projectionRowPatrimonio" style="display:none">
                         <span class="stat-label">Projeção Patrimonial</span>
                         <span class="stat-value" id="projectionValue">—</span>
                         <span class="stat-sub" id="projectionMonths"></span>
@@ -549,20 +546,6 @@
                     </div>
                 </div>
 
-                <!-- Resultados do mês navegado acima (Yield FIIs) -->
-                <div class="card" id="proventosCalcCard" style="display:none;">
-                    <div class="card-header">
-                        <h3 class="card-title">Resultados do Mês</h3>
-                        <span class="badge badge-blue" id="calcMonthBadgeProventos">Jun/2026</span>
-                    </div>
-                    <div class="stats-row stats-row-1 no-margin">
-                        <div class="mini-stat">
-                            <span class="mini-stat-label">Yield FIIs</span>
-                            <span class="mini-stat-value" id="calcYieldFII">0,00%</span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Chart -->
                 <div class="card">
                     <div class="card-header">
@@ -578,10 +561,10 @@
                     </div>
                 </div>
 
-                <!-- Bar Chart: Histórico Mensal -->
+                <!-- Bar Chart: Evolução dos Proventos -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Histórico Mensal</h3>
+                        <h3 class="card-title">Evolução dos Proventos</h3>
                         <div class="bar-chart-toggles" id="barChartToggles">
                             <button class="bar-toggle-btn active" onclick="setBarMode('dividendos')">Dividendos</button>
                             <button class="bar-toggle-btn" onclick="setBarMode('dividendosFII')">Div. FIIs</button>
@@ -597,37 +580,49 @@
                     </div>
                 </div>
 
-                <!-- History Table -->
+                <!-- History: duas tabelas em abas, pra evitar scroll excessivo -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Histórico de Proventos</h3>
+                        <div class="historico-tabs" id="historicoTabs">
+                            <button class="historico-tab active" data-tab="mensal" onclick="setHistoricoTab('mensal')">Histórico Mensal</button>
+                            <button class="historico-tab" data-tab="proventos" onclick="setHistoricoTab('proventos')">Histórico de Proventos</button>
+                        </div>
                     </div>
                     <div class="proventos-filters" id="proventosFilters">
                         <!-- chips gerados via JS -->
                     </div>
-                    <div class="table-wrapper">
-                        <table class="data-table" id="proventosTable">
-                            <thead>
-                                <tr>
-                                    <th>Mês</th>
-                                    <th>Val. Aplicado</th>
-                                    <th>Saldo Bruto</th>
-                                    <th>Dividendos</th>
-                                    <th>Div. FIIs</th>
-                                    <th>Ganho Capital</th>
-                                    <th>Ganho %</th>
-                                    <th>Yield FIIs</th>
-                                    <th>Δ R$</th>
-                                    <th>Δ %</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="proventosTableBody">
-                            </tbody>
-                        </table>
-                        <div class="empty-state" id="proventosEmpty">
-                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="5" y="8" width="30" height="24" rx="4" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M5 16H35" stroke="currentColor" stroke-width="2" opacity="0.2"/><circle cx="12" cy="12" r="2" fill="#E63946" opacity="0.5"/></svg>
-                            <p>Nenhum provento registrado ainda</p>
+
+                    <!-- Aba: Histórico Mensal -->
+                    <div class="historico-tab-panel active" id="historicoMensalPanel">
+                        <div class="table-wrapper year-grid-wrapper">
+                            <table class="data-table year-grid-table" id="historicoMensalTable">
+                                <thead>
+                                    <tr id="historicoMensalYearGridHead"></tr>
+                                </thead>
+                                <tbody id="historicoMensalTableBody">
+                                </tbody>
+                            </table>
+                            <div class="empty-state" id="historicoMensalEmpty">
+                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="5" y="8" width="30" height="24" rx="4" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M5 16H35" stroke="currentColor" stroke-width="2" opacity="0.2"/><circle cx="12" cy="12" r="2" fill="#E63946" opacity="0.5"/></svg>
+                                <p>Nenhum dado registrado ainda</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba: Histórico de Proventos -->
+                    <div class="historico-tab-panel" id="historicoProventosPanel" style="display:none">
+                        <div class="table-wrapper year-grid-wrapper">
+                            <table class="data-table year-grid-table" id="historicoProventosTable">
+                                <thead>
+                                    <tr id="historicoProventosYearGridHead"></tr>
+                                </thead>
+                                <tbody id="historicoProventosTableBody">
+                                </tbody>
+                            </table>
+                            <div class="empty-state" id="historicoProventosEmpty">
+                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="5" y="8" width="30" height="24" rx="4" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M5 16H35" stroke="currentColor" stroke-width="2" opacity="0.2"/><circle cx="12" cy="12" r="2" fill="#E63946" opacity="0.5"/></svg>
+                                <p>Nenhum provento registrado ainda</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -975,10 +970,51 @@
             </div>
 
             <footer class="app-footer">
+                <button class="footer-version" onclick="toggleChangelog()">FastInvest v2.4.2</button>
                 <a href="https://www.instagram.com/dev.thigas" target="_blank" rel="noopener noreferrer" class="footer-link">
                     By Thigas
                 </a>
             </footer>
+
+            <!-- Changelog -->
+            <div class="changelog-overlay" id="changelogOverlay" style="display:none" onclick="if(event.target===this) toggleChangelog()">
+                <div class="changelog-modal">
+                    <div class="changelog-header">
+                        <h3>Changelog</h3>
+                        <button class="changelog-close" onclick="toggleChangelog()">×</button>
+                    </div>
+                    <div class="changelog-body">
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v2.4.2</span>
+                            <p>Grid Ano × Mês no histórico, tooltip flutuante, cards mais enxutos</p>
+                        </div>
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v2.4.0</span>
+                            <p>Histórico Mensal e Histórico de Proventos separados, agora em abas</p>
+                        </div>
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v2.3.0</span>
+                            <p>Reorganização dos cards de Proventos e Patrimônio</p>
+                        </div>
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v2.2.0</span>
+                            <p>Nova tela de login (split-screen) + login com Google</p>
+                        </div>
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v2.0.0</span>
+                            <p>Migração para Supabase: contas de usuário e sincronização na nuvem</p>
+                        </div>
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v1.1.0</span>
+                            <p>Aba Ativos com classificação automática de Ações e FIIs da B3</p>
+                        </div>
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v1.0.0</span>
+                            <p>Versão original: controle de patrimônio e proventos, 100% local</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </section>
 

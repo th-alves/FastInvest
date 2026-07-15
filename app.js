@@ -548,21 +548,12 @@ function renderProventos() {
         }
     }
 
-    const proventosCalcCard = document.getElementById('proventosCalcCard');
-    if (proventosCalcCard) {
-        if (hasProventosData) {
-            proventosCalcCard.style.display = '';
-            document.getElementById('calcMonthBadgeProventos').textContent = monthLabelShort(currentProventosMonth.year, currentProventosMonth.month);
-        } else {
-            proventosCalcCard.style.display = 'none';
-        }
-    }
-
     // Summary stats
     updateProventosSummary(data);
 
-    // Table
-    renderProventosTable(data);
+    // Tabelas: Histórico Mensal (patrimônio) + Histórico de Proventos (dividendos)
+    renderHistoricoMensalTable(data);
+    renderHistoricoProventosTable(data);
 
     // Bar chart
     renderBarChart(data, currentBarMode);
@@ -649,12 +640,9 @@ function syncPatrimonioTotalFromProventos(proventosData) {
 function updateProventosCalc(monthData, key, allData) {
     const va = monthData.valorAplicado || 0;
     const sb = monthData.saldoBruto || 0;
-    const divFII = monthData.dividendosFII || 0;
-    const valFII = monthData.valorFII || 0;
 
     const ganhoCapR = sb - va;
     const ganhoCapPct = va > 0 ? (ganhoCapR / va) * 100 : 0;
-    const yieldFII = valFII > 0 ? (divFII / valFII) * 100 : 0;
 
     // Performance: (Ganho de Capital + Total de Proventos) / Saldo Bruto
     // Equivalente à planilha: (D1 + C13) / B1
@@ -667,7 +655,6 @@ function updateProventosCalc(monthData, key, allData) {
 
     document.getElementById('calcGanhoCapital').textContent = formatCurrency(ganhoCapR);
     document.getElementById('calcGanhoCapitalPct').textContent = formatPercent(ganhoCapPct);
-    document.getElementById('calcYieldFII').textContent = formatPercent(yieldFII);
     const perfEl = document.getElementById('calcPerformance');
     perfEl.textContent = performance !== null ? formatPercent(performance) : '—';
     perfEl.className = performance !== null ? (performance >= 0 ? 'positive' : 'negative') : '';
@@ -749,32 +736,113 @@ function updateProventosSummary(data) {
     updateProjectionAndYoY(data);
 }
 
-function renderProventosTable(data) {
-    let keys = Object.keys(data).sort();
+function setHistoricoTab(tab) {
+    document.querySelectorAll('.historico-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+    document.getElementById('historicoMensalPanel').style.display = tab === 'mensal' ? '' : 'none';
+    document.getElementById('historicoProventosPanel').style.display = tab === 'proventos' ? '' : 'none';
+}
 
-    // Apply active filter
+// Filtro compartilhado pelas duas tabelas de histórico (Mensal e Proventos)
+function getFilteredHistoricoKeys(data) {
+    let keys = Object.keys(data).sort();
     const now = new Date();
+
     if (currentProventosFilter !== 'all') {
         if (currentProventosFilter === '6m') {
             const cutoff = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-            keys = keys.filter(k => {
-                const d = data[k];
-                return new Date(d.year, d.month, 1) >= cutoff;
-            });
+            keys = keys.filter(k => new Date(data[k].year, data[k].month, 1) >= cutoff);
         } else if (currentProventosFilter === '12m') {
             const cutoff = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-            keys = keys.filter(k => {
-                const d = data[k];
-                return new Date(d.year, d.month, 1) >= cutoff;
-            });
+            keys = keys.filter(k => new Date(data[k].year, data[k].month, 1) >= cutoff);
         } else {
             // year filter e.g. "2025"
             keys = keys.filter(k => String(data[k].year) === currentProventosFilter);
         }
     }
+    return keys;
+}
 
-    const tbody = document.getElementById('proventosTableBody');
-    const emptyState = document.getElementById('proventosEmpty');
+// ── Histórico Mensal: evolução patrimonial (aplicado, saldo, ganho, delta) ──
+// O tooltip das células do grid Ano x Mês precisa "escapar" do container
+// com scroll horizontal (overflow-x cria um contexto que também recorta
+// o eixo vertical — é assim que o CSS funciona). Por isso ele é montado
+// direto no <body>, posicionado via JS com as coordenadas reais da célula.
+function toggleChangelog() {
+    const overlay = document.getElementById('changelogOverlay');
+    overlay.style.display = overlay.style.display === 'none' ? 'flex' : 'none';
+}
+
+function showFloatingTooltip(cellEl) {
+    const source = cellEl.querySelector('.year-grid-tooltip');
+    if (!source) return;
+
+    let tip = document.getElementById('floatingTooltip');
+    if (!tip) {
+        tip = document.createElement('div');
+        tip.id = 'floatingTooltip';
+        tip.className = 'floating-tooltip';
+        document.body.appendChild(tip);
+    }
+    tip.innerHTML = source.innerHTML;
+    tip.style.display = 'block';
+
+    const rect = cellEl.getBoundingClientRect();
+    const tipRect = tip.getBoundingClientRect();
+
+    let top = rect.top - tipRect.height - 8;
+    if (top < 8) top = rect.bottom + 8; // sem espaço em cima: mostra embaixo da célula
+
+    let left = rect.left + rect.width / 2 - tipRect.width / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipRect.width - 8));
+
+    tip.style.top = top + 'px';
+    tip.style.left = left + 'px';
+}
+
+function hideFloatingTooltip() {
+    const tip = document.getElementById('floatingTooltip');
+    if (tip) tip.style.display = 'none';
+}
+
+// Valor compacto pras células do grid (espaço é curto: 12 meses lado a lado)
+function formatCompactCurrency(value) {
+    if (value === null || value === undefined || isNaN(value) || value === 0) return '—';
+    const abs = Math.abs(value);
+    const sign = value < 0 ? '-' : '';
+    if (abs >= 1000) {
+        return sign + 'R$ ' + (abs / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + 'k';
+    }
+    return sign + 'R$ ' + Math.round(abs).toLocaleString('pt-BR');
+}
+
+// Agrupa as chaves filtradas por ano, mapeando mês (0-11) → dado do mês
+function groupHistoricoByYear(keys, data) {
+    const byYear = {};
+    keys.forEach(k => {
+        const d = data[k];
+        if (!byYear[d.year]) byYear[d.year] = {};
+        byYear[d.year][d.month] = { key: k, ...d };
+    });
+    const years = Object.keys(byYear).map(Number).sort((a, b) => b - a); // mais recente primeiro
+    return { byYear, years };
+}
+
+// Monta o cabeçalho Ano | Jan | Fev | ... | Dez (compartilhado pelas duas tabelas)
+function renderYearGridHead(theadRowId) {
+    const row = document.getElementById(theadRowId);
+    row.innerHTML = '<th>Ano</th>' + MONTH_NAMES_SHORT.map(m => `<th>${m}</th>`).join('');
+}
+
+// ── Histórico Mensal: uma linha por ano, um mês por coluna ──────
+// Cada célula mostra o Saldo Bruto (valor principal) + a variação vs.
+// mês anterior; passar o mouse revela o detalhe completo (aplicado,
+// ganho de capital, delta). Clicar edita o mês; o "×" no canto exclui.
+function renderHistoricoMensalTable(data) {
+    const keys = getFilteredHistoricoKeys(data);
+    const tbody = document.getElementById('historicoMensalTableBody');
+    const emptyState = document.getElementById('historicoMensalEmpty');
 
     if (keys.length === 0) {
         tbody.innerHTML = '';
@@ -782,50 +850,88 @@ function renderProventosTable(data) {
         return;
     }
     emptyState.style.display = 'none';
+    renderYearGridHead('historicoMensalYearGridHead');
 
-    tbody.innerHTML = keys.map((k, idx) => {
-        const d = data[k];
-        const va = d.valorAplicado || 0;
-        const sb = d.saldoBruto || 0;
-        const div = d.dividendos || 0;
-        const divFII = d.dividendosFII || 0;
-        const valFII = d.valorFII || 0;
+    const allKeysSorted = Object.keys(data).sort(); // pra achar o mês anterior corretamente
+    const { byYear, years } = groupHistoricoByYear(keys, data);
 
-        const ganhoR = sb - va;
-        const ganhoPct = va > 0 ? (ganhoR / va) * 100 : 0;
-        const yieldFII = valFII > 0 ? (divFII / valFII) * 100 : 0;
+    tbody.innerHTML = years.map(year => {
+        const cells = MONTH_NAMES_SHORT.map((_, month) => {
+            const entry = byYear[year][month];
+            if (!entry) return '<td class="year-grid-cell empty">—</td>';
 
-        // Δ: variação do saldo bruto em relação ao mês anterior
-        let deltaR = '—';
-        let deltaPct = '—';
-        if (idx > 0) {
-            const prevSB = data[keys[idx - 1]]?.saldoBruto || 0;
-            const dr = sb - prevSB;
-            const arrow = dr >= 0 ? ' ↑' : ' ↓';
-            deltaR = formatCurrency(dr) + arrow;
-            deltaPct = prevSB > 0 ? formatPercent((dr / prevSB) * 100) + arrow : '—';
-        }
+            const va = entry.valorAplicado || 0;
+            const sb = entry.saldoBruto || 0;
+            const ganhoR = sb - va;
+            const ganhoPct = va > 0 ? (ganhoR / va) * 100 : 0;
 
-        return `<tr>
-            <td><span class="month-cell">${monthLabelShort(d.year, d.month)}</span></td>
-            <td>${formatCurrency(va)}</td>
-            <td>${formatCurrency(sb)}</td>
-            <td>${formatCurrency(div)}</td>
-            <td>${formatCurrency(divFII)}</td>
-            <td class="${ganhoR >= 0 ? 'positive' : 'negative'}">${formatCurrency(ganhoR)}</td>
-            <td class="${ganhoPct >= 0 ? 'positive' : 'negative'}">${formatPercent(ganhoPct)}</td>
-            <td>${formatPercent(yieldFII)}</td>
-            <td class="${idx > 0 ? (sb - (data[keys[idx-1]]?.saldoBruto||0) >= 0 ? 'positive' : 'negative') : ''}">${deltaR}</td>
-            <td class="${idx > 0 ? (sb - (data[keys[idx-1]]?.saldoBruto||0) >= 0 ? 'positive' : 'negative') : ''}">${deltaPct}</td>
-            <td>
-                <button class="btn-icon btn-edit" onclick="editProventosMonth(${d.year}, ${d.month})" title="Editar">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10.5V12H3.5L10.2 5.3L8.7 3.8L2 10.5ZM11.8 3.7C12 3.5 12 3.2 11.8 3L11 2.2C10.8 2 10.5 2 10.3 2.2L9.5 3L11 4.5L11.8 3.7Z" fill="currentColor"/></svg>
-                </button>
-                <button class="btn-icon btn-delete" onclick="deleteProventosMonth('${k}')" title="Excluir">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 4H11L10.3 12H3.7L3 4ZM5 2H9M2 4H12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-                </button>
-            </td>
-        </tr>`;
+            const idxGlobal = allKeysSorted.indexOf(entry.key);
+            let deltaR = null, deltaPct = null;
+            if (idxGlobal > 0) {
+                const prevSB = data[allKeysSorted[idxGlobal - 1]]?.saldoBruto || 0;
+                deltaR = sb - prevSB;
+                deltaPct = prevSB > 0 ? (deltaR / prevSB) * 100 : null;
+            }
+            const deltaClass = deltaR === null ? '' : (deltaR >= 0 ? 'positive' : 'negative');
+            const deltaLabel = deltaR === null ? '—' : (deltaR >= 0 ? '↑ ' : '↓ ') + formatPercent(Math.abs(deltaPct ?? 0));
+
+            return `<td class="year-grid-cell has-data" onclick="editProventosMonth(${year}, ${month})" onmouseenter="showFloatingTooltip(this)" onmouseleave="hideFloatingTooltip()">
+                <span class="year-grid-value">${formatCompactCurrency(sb)}</span>
+                <span class="year-grid-sub ${deltaClass}">${deltaLabel}</span>
+                <div class="year-grid-tooltip">
+                    <div class="provento-tooltip-row"><span>Val. Aplicado</span><strong>${formatCurrency(va)}</strong></div>
+                    <div class="provento-tooltip-row"><span>Saldo Bruto</span><strong>${formatCurrency(sb)}</strong></div>
+                    <div class="provento-tooltip-row"><span>Ganho Capital</span><strong>${formatCurrency(ganhoR)} (${formatPercent(ganhoPct)})</strong></div>
+                    <div class="provento-tooltip-row"><span>Δ vs. mês anterior</span><strong>${deltaR === null ? '—' : formatCurrency(deltaR)}</strong></div>
+                </div>
+                <button class="year-grid-delete" onclick="event.stopPropagation(); deleteProventosMonth('${entry.key}')" title="Excluir">×</button>
+            </td>`;
+        }).join('');
+
+        return `<tr><td class="year-grid-year">${year}</td>${cells}</tr>`;
+    }).join('');
+}
+
+// ── Histórico de Proventos: mesma ideia, célula mostra o total de
+//    dividendos, e o hover revela a divisão entre FIIs e Ações + Yield.
+//    Somente leitura (editar/excluir ficam no Histórico Mensal). ──────
+function renderHistoricoProventosTable(data) {
+    const keys = getFilteredHistoricoKeys(data);
+    const tbody = document.getElementById('historicoProventosTableBody');
+    const emptyState = document.getElementById('historicoProventosEmpty');
+
+    if (keys.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = '';
+        return;
+    }
+    emptyState.style.display = 'none';
+    renderYearGridHead('historicoProventosYearGridHead');
+
+    const { byYear, years } = groupHistoricoByYear(keys, data);
+
+    tbody.innerHTML = years.map(year => {
+        const cells = MONTH_NAMES_SHORT.map((_, month) => {
+            const entry = byYear[year][month];
+            if (!entry) return '<td class="year-grid-cell empty">—</td>';
+
+            const div = entry.dividendos || 0;
+            const divFII = entry.dividendosFII || 0;
+            const valFII = entry.valorFII || 0;
+            const divAcoes = Math.max(div - divFII, 0);
+            const yieldFII = valFII > 0 ? (divFII / valFII) * 100 : 0;
+
+            return `<td class="year-grid-cell" onmouseenter="showFloatingTooltip(this)" onmouseleave="hideFloatingTooltip()">
+                <span class="year-grid-value">${formatCurrency(div)}</span>
+                <div class="year-grid-tooltip">
+                    <div class="provento-tooltip-row"><span>🏢 FIIs</span><strong>${formatCurrency(divFII)}</strong></div>
+                    <div class="provento-tooltip-row"><span>📈 Ações</span><strong>${formatCurrency(divAcoes)}</strong></div>
+                    <div class="provento-tooltip-row"><span>Yield FIIs</span><strong>${formatPercent(yieldFII)}</strong></div>
+                </div>
+            </td>`;
+        }).join('');
+
+        return `<tr><td class="year-grid-year">${year}</td>${cells}</tr>`;
     }).join('');
 }
 
@@ -963,7 +1069,7 @@ function renderProventosPieChart(data) {
 }
 
 // ============================================================
-// BAR CHART — Histórico Mensal
+// BAR CHART — Evolução dos Proventos
 // ============================================================
 
 function setBarMode(mode) {
