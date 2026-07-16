@@ -1101,6 +1101,191 @@ ul, ol { list-style: none; }
   visibility: hidden;
 }
 
+/* ── Intro / Splash ──────────────────────────────────────── */
+.intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, var(--bg-elevated) 0%, var(--bg-base) 70%);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro-screen.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  animation: introFadeIn 0.4s var(--ease-out) forwards;
+}
+
+.intro-screen.exit {
+  animation: introFadeOut 0.6s cubic-bezier(0.6, 0, 0.85, 0.35) forwards;
+}
+
+@keyframes introFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes introFadeOut {
+  0% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(14px);
+    transform: scale(1.08);
+  }
+}
+
+.intro-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 560px;
+  height: 560px;
+  transform: translate(-50%, -50%) scale(0.6);
+  background: radial-gradient(circle, rgba(255, 107, 122, 0.22) 0%, rgba(255, 183, 3, 0.10) 45%, transparent 72%);
+  border-radius: 50%;
+  opacity: 0;
+  animation: introGlowPulse 2.6s var(--ease-out) forwards;
+  pointer-events: none;
+}
+
+@keyframes introGlowPulse {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  35%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.35); }
+}
+
+.intro-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.intro-logo-wrap {
+  margin-bottom: 4px;
+  filter: drop-shadow(0 0 18px rgba(255, 107, 122, 0.35));
+}
+
+.intro-logo-frame {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: introDraw 0.8s var(--ease-out) 0.1s forwards;
+  transform-origin: center;
+}
+
+.intro-logo-line {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: introDraw 0.6s var(--ease-out) 0.5s forwards;
+}
+
+@keyframes introDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+.intro-logo-dot {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: introDotPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: calc(0.85s + (var(--dd) * 0.07s));
+}
+
+@keyframes introDotPop {
+  0%   { opacity: 0; transform: scale(0); }
+  60%  { opacity: 1; transform: scale(1.4); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.intro-logo-wrap svg {
+  animation: introLogoFloat 3s ease-in-out 1.4s infinite;
+}
+
+@keyframes introLogoFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+.intro-title {
+  display: flex;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.intro-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(16px);
+  animation: introLetterIn 0.45s var(--ease-out) forwards;
+  animation-delay: calc(1s + (var(--li) * 0.04s));
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.intro-letter-accent {
+  background: linear-gradient(135deg, #FF6B7A 0%, #FFB703 60%, #A366FF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes introLetterIn {
+  0%   { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.intro-tagline {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  opacity: 0;
+  letter-spacing: 0.3px;
+  animation: introFadeUp 0.5s var(--ease-out) 1.45s forwards;
+}
+
+@keyframes introFadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.intro-progress {
+  width: 140px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+  opacity: 0;
+  animation: introFadeUp 0.3s var(--ease-out) 1.55s forwards;
+}
+
+.intro-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #FF6B7A, #FFB703, #A366FF);
+  animation: introProgressFill 0.85s cubic-bezier(0.4, 0, 0.2, 1) 1.6s forwards;
+}
+
+@keyframes introProgressFill {
+  to { width: 100%; }
+}
+
 /* ── Dashboard ───────────────────────────────────────────── */
 .dashboard {
   display: none;

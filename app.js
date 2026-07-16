@@ -185,14 +185,29 @@ async function onAuthSuccess(user) {
 
 function enterAppFromAuth() {
     const authScreen = document.getElementById('authScreen');
+    const introScreen = document.getElementById('introScreen');
     const dashboard = document.getElementById('dashboard');
 
     authScreen.classList.add('hidden');
+
     setTimeout(() => {
-        dashboard.classList.add('active');
-        document.body.classList.add('dashboard-active');
-        initDashboardParticles('dashboardParticles');
-        initDashboard();
+        // Mostra a intro
+        initDashboardParticles('introParticles');
+        introScreen.classList.add('active');
+
+        // Depois de a animação toda rodar, some com a intro e revela o dashboard
+        setTimeout(() => {
+            introScreen.classList.add('exit');
+
+            setTimeout(() => {
+                introScreen.classList.remove('active', 'exit');
+
+                dashboard.classList.add('active');
+                document.body.classList.add('dashboard-active');
+                initDashboardParticles('dashboardParticles');
+                initDashboard();
+            }, 600); // duração da animação de saída (introFadeOut)
+        }, 2500); // tempo total que a intro fica visível antes de sair
     }, 350);
 }
 
@@ -382,7 +397,7 @@ function initDashboardParticles(containerId = 'dashboardParticles') {
     // então as partículas ficam concentradas nas bordas pra não "sujar" o card.
     // Na tela de login, o container #authParticles já é só o painel esquerdo
     // (sem card no meio), então espalha por toda a largura dele.
-    const fullSpread = containerId === 'authParticles';
+    const fullSpread = containerId === 'authParticles' || containerId === 'introParticles';
 
     for (let i = 0; i < 20; i++) {
         const p = document.createElement('div');
