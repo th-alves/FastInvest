@@ -437,6 +437,10 @@
                             <label>Quantidade <span class="input-optional">(opcional)</span></label>
                             <input type="text" id="ativoQuantidade" class="input-field input-lg" placeholder="0" inputmode="numeric">
                         </div>
+                        <div class="input-group">
+                            <label>Valor Investido <span class="input-optional">(opcional)</span></label>
+                            <input type="text" id="ativoValorInvestido" class="input-field input-lg" placeholder="R$ 0,00" inputmode="decimal">
+                        </div>
                     </div>
                     <div class="ativo-preview" id="ativoPreview" style="display:none">
                         <span class="badge" id="ativoPreviewTipo"></span>
@@ -471,6 +475,7 @@
                                     <th>Tipo</th>
                                     <th>Segmento</th>
                                     <th>Quantidade</th>
+                                    <th>Valor Investido</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -481,6 +486,29 @@
                             <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M20 12V28M12 20H28" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.2"/></svg>
                             <p>Nenhum ativo cadastrado ainda</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Diversificação da carteira -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="historico-tabs" id="diversificacaoTabs">
+                            <button class="historico-tab active" data-tab="tipo" onclick="setDiversificacaoTab('tipo')">Por Tipo</button>
+                            <button class="historico-tab" data-tab="segmento" onclick="setDiversificacaoTab('segmento')">Por Segmento</button>
+                        </div>
+                    </div>
+                    <p class="diversificacao-hint" id="diversificacaoHint"></p>
+                    <div id="diversificacaoTipoPanel" class="diversificacao-chart-row">
+                        <canvas id="diversificacaoTipoChart"></canvas>
+                        <div class="diversificacao-legend" id="diversificacaoTipoLegend"></div>
+                    </div>
+                    <div id="diversificacaoSegmentoPanel" class="diversificacao-chart-row" style="display:none">
+                        <canvas id="diversificacaoSegmentoChart"></canvas>
+                        <div class="diversificacao-legend" id="diversificacaoSegmentoLegend"></div>
+                    </div>
+                    <div class="empty-state" id="diversificacaoEmpty">
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M13 20L18 25L27 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.2"/></svg>
+                        <p>Informe o Valor Investido dos seus ativos pra ver a diversificação</p>
                     </div>
                 </div>
             </div>
@@ -970,7 +998,7 @@
             </div>
 
             <footer class="app-footer">
-                <button class="footer-version" onclick="toggleChangelog()">FastInvest v2.4.2</button>
+                <button class="footer-version" onclick="toggleChangelog()">FastInvest v2.5.0</button>
                 <a href="https://www.instagram.com/dev.thigas" target="_blank" rel="noopener noreferrer" class="footer-link">
                     By Thigas
                 </a>
@@ -984,6 +1012,10 @@
                         <button class="changelog-close" onclick="toggleChangelog()">×</button>
                     </div>
                     <div class="changelog-body">
+                        <div class="changelog-entry">
+                            <span class="changelog-version">v2.5.0</span>
+                            <p>Diversificação da carteira (por Tipo e Segmento) com gráfico de rosca interativo e hover</p>
+                        </div>
                         <div class="changelog-entry">
                             <span class="changelog-version">v2.4.2</span>
                             <p>Grid Ano × Mês no histórico, tooltip flutuante, cards mais enxutos</p>

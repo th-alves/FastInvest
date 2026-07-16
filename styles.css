@@ -1828,7 +1828,7 @@ ul, ol { list-style: none; }
 /* ── Ativos Tab ──────────────────────────────────────────── */
 .ativos-form-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1.2fr 0.8fr 1fr;
   gap: var(--space-md);
 }
 
@@ -2088,6 +2088,73 @@ ul, ol { list-style: none; }
 }
 
 /* ── Abas do Histórico (Mensal / Proventos) ─────────────────── */
+/* ── Diversificação da Carteira ──────────────────────────────── */
+.diversificacao-hint {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.diversificacao-chart-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xl);
+  flex-wrap: wrap;
+}
+
+.diversificacao-chart-row canvas {
+  flex-shrink: 0;
+}
+
+.diversificacao-legend {
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 340px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-right: 4px;
+}
+
+.diversificacao-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-sm);
+}
+
+.diversificacao-legend-label {
+  min-width: 0;
+  max-width: 220px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.diversificacao-legend-pct {
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: var(--space-md);
+}
+
+.diversificacao-legend-pct {
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .diversificacao-chart-row { justify-content: center; }
+  .diversificacao-legend { min-width: 100%; }
+}
+
 .historico-tabs {
   display: flex;
   gap: var(--space-xs);

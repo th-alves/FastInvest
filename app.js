@@ -1418,6 +1418,9 @@ function saveAtivo() {
     const quantidadeRaw = document.getElementById('ativoQuantidade').value.trim();
     const quantidade = quantidadeRaw ? parseInt(quantidadeRaw, 10) : null;
 
+    const valorInvestidoRaw = document.getElementById('ativoValorInvestido').value.trim();
+    const valorInvestido = valorInvestidoRaw ? parseCurrencyInput(valorInvestidoRaw) : null;
+
     const result = classificarParaExibicao(ticker);
     const manualSegmento = document.getElementById('ativoSegmentoManual').value.trim();
     const tipoFinal = result.tipo || 'Ação'; // melhor esforço quando não identificado
@@ -1428,7 +1431,7 @@ function saveAtivo() {
     if (editingAtivoId) {
         const idx = list.findIndex(a => a.id === editingAtivoId);
         if (idx !== -1) {
-            list[idx] = { ...list[idx], ticker, tipo: tipoFinal, segmento: segmentoFinal, quantidade };
+            list[idx] = { ...list[idx], ticker, tipo: tipoFinal, segmento: segmentoFinal, quantidade, valorInvestido };
         }
         editingAtivoId = null;
         document.getElementById('ativoSaveBtn').innerHTML =
@@ -1441,6 +1444,7 @@ function saveAtivo() {
             tipo: tipoFinal,
             segmento: segmentoFinal,
             quantidade,
+            valorInvestido,
             dataAdicao: new Date().toISOString()
         });
         showToast('Ativo adicionado!');
@@ -1450,6 +1454,7 @@ function saveAtivo() {
 
     tickerInput.value = '';
     document.getElementById('ativoQuantidade').value = '';
+    document.getElementById('ativoValorInvestido').value = '';
     document.getElementById('ativoSegmentoManual').value = '';
     document.getElementById('ativoPreview').style.display = 'none';
     document.getElementById('ativoManualWrap').style.display = 'none';
@@ -1465,6 +1470,7 @@ function editAtivo(id) {
     editingAtivoId = id;
     document.getElementById('ativoTicker').value = ativo.ticker;
     document.getElementById('ativoQuantidade').value = ativo.quantidade ?? '';
+    document.getElementById('ativoValorInvestido').value = ativo.valorInvestido ?? '';
     document.getElementById('ativoSegmentoManual').value = '';
     document.getElementById('ativoSaveBtn').innerHTML =
         '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Atualizar Ativo';
@@ -1529,6 +1535,7 @@ function renderAtivos() {
             <td><span class="badge ${a.tipo === 'FII' ? 'badge-green' : 'badge-blue'}">${a.tipo}</span></td>
             <td>${a.segmento}</td>
             <td>${a.quantidade ?? '—'}</td>
+            <td>${a.valorInvestido ? formatCurrency(a.valorInvestido) : '—'}</td>
             <td>
                 <button class="btn-icon btn-edit" onclick="editAtivo('${a.id}')" title="Editar">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10.5V12H3.5L10.2 5.3L8.7 3.8L2 10.5ZM11.8 3.7C12 3.5 12 3.2 11.8 3L11 2.2C10.8 2 10.5 2 10.3 2.2L9.5 3L11 4.5L11.8 3.7Z" fill="currentColor"/></svg>
@@ -1538,6 +1545,198 @@ function renderAtivos() {
                 </button>
             </td>
         </tr>`).join('');
+
+    renderDiversificacao();
+}
+
+// ============================================================
+// DIVERSIFICAÇÃO DA CARTEIRA (por Tipo e por Segmento)
+// ============================================================
+let currentDiversificacaoTab = 'tipo';
+
+function setDiversificacaoTab(tab) {
+    currentDiversificacaoTab = tab;
+    document.querySelectorAll('#diversificacaoTabs .historico-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+    });
+    document.getElementById('diversificacaoTipoPanel').style.display = tab === 'tipo' ? '' : 'none';
+    document.getElementById('diversificacaoSegmentoPanel').style.display = tab === 'segmento' ? '' : 'none';
+}
+
+function renderDiversificacao() {
+    const list = getAtivosData();
+    const comValor = list.filter(a => a.valorInvestido && a.valorInvestido > 0);
+    const semValor = list.length - comValor.length;
+
+    const emptyState = document.getElementById('diversificacaoEmpty');
+    const tipoPanel = document.getElementById('diversificacaoTipoPanel');
+    const segmentoPanel = document.getElementById('diversificacaoSegmentoPanel');
+    const hint = document.getElementById('diversificacaoHint');
+
+    if (comValor.length === 0) {
+        emptyState.style.display = '';
+        tipoPanel.style.display = 'none';
+        segmentoPanel.style.display = 'none';
+        hint.textContent = '';
+        return;
+    }
+    emptyState.style.display = 'none';
+    setDiversificacaoTab(currentDiversificacaoTab);
+
+    hint.textContent = semValor > 0
+        ? `Calculado com base no Valor Investido de ${comValor.length} ativo${comValor.length > 1 ? 's' : ''} (${semValor} sem valor informado não entram na conta).`
+        : `Calculado com base no Valor Investido dos seus ${comValor.length} ativo${comValor.length > 1 ? 's' : ''}.`;
+
+    // Agrupa por Tipo (Ação/FII/BDR)
+    const porTipo = {};
+    comValor.forEach(a => { porTipo[a.tipo] = (porTipo[a.tipo] || 0) + a.valorInvestido; });
+    renderDonutWithLegend('diversificacaoTipoChart', 'diversificacaoTipoLegend', porTipo);
+
+    // Agrupa por Segmento
+    const porSegmento = {};
+    comValor.forEach(a => { porSegmento[a.segmento] = (porSegmento[a.segmento] || 0) + a.valorInvestido; });
+    renderDonutWithLegend('diversificacaoSegmentoChart', 'diversificacaoSegmentoLegend', porSegmento);
+}
+
+// Donut + legenda lado a lado — mesmo estilo de desenho do gráfico de
+// Distribuição de Proventos (canvas puro, sem biblioteca), só que aqui a
+// legenda fica ao lado (scrollável) em vez de embaixo, pra economizar
+// espaço vertical quando há muitas categorias (ex: vários segmentos).
+function renderDonutWithLegend(canvasId, legendId, grupos) {
+    const canvas = document.getElementById(canvasId);
+    const legendEl = document.getElementById(legendId);
+    const ctx = canvas.getContext('2d');
+
+    const entries = Object.entries(grupos).sort((a, b) => b[1] - a[1]); // maior primeiro
+    const labels = entries.map(e => e[0]);
+    const values = entries.map(e => e[1]);
+    const total = values.reduce((a, b) => a + b, 0);
+
+    const dpr = window.devicePixelRatio || 1;
+    const size = 200;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, size, size);
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const radius = size / 2 - 8;
+    const innerRadius = radius * 0.6;
+
+    let startAngle = -Math.PI / 2;
+    const sliceData = []; // guarda os ângulos de cada fatia, pra detectar o hover depois
+    values.forEach((val, i) => {
+        const sliceAngle = (val / total) * Math.PI * 2;
+        const endAngle = startAngle + sliceAngle;
+        const color = PIE_COLORS[i % PIE_COLORS.length];
+
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(startAngle) * innerRadius, cy + Math.sin(startAngle) * innerRadius);
+        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.arc(cx, cy, innerRadius, endAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#161616';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        sliceData.push({
+            label: labels[i],
+            value: val,
+            pct: total > 0 ? (val / total) * 100 : 0,
+            startAngle,
+            endAngle
+        });
+
+        startAngle = endAngle;
+    });
+
+    const textMuted = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#6B6058';
+    const textPrimary = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim() || '#F0EBE3';
+    ctx.fillStyle = textMuted;
+    ctx.font = `500 11px Inter`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Total', cx, cy - 10);
+
+    ctx.fillStyle = textPrimary;
+    ctx.font = `700 13px Inter`;
+    ctx.fillText(formatCompactCurrency(total), cx, cy + 10);
+
+    // Legenda (rolável, um item por categoria, ordenado do maior pro menor)
+    legendEl.innerHTML = labels.map((label, i) => {
+        const color = PIE_COLORS[i % PIE_COLORS.length];
+        const pct = total > 0 ? (values[i] / total) * 100 : 0;
+        return `<div class="diversificacao-legend-item">
+            <span class="chart-legend-dot" style="background:${color}"></span>
+            <span class="diversificacao-legend-label" title="${label}">${label}</span>
+            <span class="diversificacao-legend-pct">${formatPercent(pct)}</span>
+        </div>`;
+    }).join('');
+
+    // Hover no donut: detecta a fatia sob o cursor (ângulo + distância do
+    // centro) e mostra o mesmo tooltip flutuante usado no grid de histórico.
+    canvas.onmousemove = function (e) {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const dx = mx - cx;
+        const dy = my - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < innerRadius || dist > radius) {
+            hideFloatingTooltip();
+            canvas.style.cursor = 'default';
+            return;
+        }
+
+        let angle = Math.atan2(dy, dx);
+        if (angle < -Math.PI / 2) angle += Math.PI * 2;
+        const hit = sliceData.find(s => angle >= s.startAngle && angle < s.endAngle);
+
+        if (hit) {
+            canvas.style.cursor = 'pointer';
+            showChartTooltipAt(e.clientX, e.clientY, `
+                <div class="provento-tooltip-row"><span>${hit.label}</span><strong>${formatPercent(hit.pct)}</strong></div>
+                <div class="provento-tooltip-row"><span>Valor</span><strong>${formatCurrency(hit.value)}</strong></div>
+            `);
+        } else {
+            hideFloatingTooltip();
+        }
+    };
+    canvas.onmouseleave = function () {
+        hideFloatingTooltip();
+        canvas.style.cursor = 'default';
+    };
+}
+
+// Mesma ideia do showFloatingTooltip, mas posicionado nas coordenadas do
+// mouse (usado pelo hover do donut) em vez das coordenadas de uma célula.
+function showChartTooltipAt(clientX, clientY, html) {
+    let tip = document.getElementById('floatingTooltip');
+    if (!tip) {
+        tip = document.createElement('div');
+        tip.id = 'floatingTooltip';
+        tip.className = 'floating-tooltip';
+        document.body.appendChild(tip);
+    }
+    tip.innerHTML = html;
+    tip.style.display = 'block';
+
+    const tipRect = tip.getBoundingClientRect();
+    let left = clientX + 14;
+    let top = clientY + 14;
+    left = Math.min(left, window.innerWidth - tipRect.width - 8);
+    top = Math.min(top, window.innerHeight - tipRect.height - 8);
+
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
 }
 
 // ============================================================
