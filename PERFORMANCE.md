@@ -63,7 +63,7 @@ pro Vercel, senão a alteração não aparece no site (o HTML aponta pro
 arquivo minificado, não pro original). Agora isso é um comando só:
 
 ```bash
-npm run build
+npm run minify
 ```
 
 Esse comando roda os três minificadores de uma vez (`app.min.js`,
@@ -74,7 +74,22 @@ só ter o Node.js instalado (`node -v` pra conferir).
 
 Se quiser rodar cada minificador separado por algum motivo, também dá:
 ```bash
-npm run build:js           # só o app.js
-npm run build:ativos-db    # só o ativos-db.js
-npm run build:css          # só o styles.css
+npm run minify:js           # só o app.js
+npm run minify:ativos-db    # só o ativos-db.js
+npm run minify:css          # só o styles.css
+```
+
+**⚠️ Nunca nomeie um script do `package.json` como `"build"`.** A Vercel
+detecta esse nome automaticamente e passa a tratar o projeto como se
+precisasse de um passo de build de framework (React/Next/Vite etc.),
+esperando os arquivos prontos numa pasta chamada `public` — e quebra o
+deploy, já que este projeto é HTML/CSS/JS puro, sem build step de
+verdade. Por isso o comando se chama `minify`, e existe um `vercel.json`
+na raiz do projeto dizendo explicitamente à Vercel "não rode build
+nenhum, sirva os arquivos daqui mesmo":
+```json
+{
+  "buildCommand": false,
+  "outputDirectory": "."
+}
 ```
