@@ -374,7 +374,7 @@ ul, ol { list-style: none; }
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
@@ -619,7 +619,7 @@ ul, ol { list-style: none; }
   font-size: var(--font-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
 }
 .btn-google:hover {
   border-color: var(--accent-a20);
@@ -924,7 +924,7 @@ ul, ol { list-style: none; }
   border-radius: var(--radius-full);
   font-size: var(--font-sm);
   color: var(--text-secondary);
-  transition: all var(--duration-base) var(--ease-out);
+  transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
 }
 
 .feature-pill:hover {
@@ -959,7 +959,7 @@ ul, ol { list-style: none; }
   border: none;
   border-radius: var(--radius-md);
   box-shadow: 0 4px 20px var(--primary-glow);
-  transition: all var(--duration-base) var(--ease-out);
+  transition: box-shadow var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
   position: relative;
   overflow: hidden;
   white-space: nowrap;
@@ -1007,7 +1007,7 @@ ul, ol { list-style: none; }
   color: var(--text-secondary);
   background: var(--bg-card-alpha);
   border: 1px solid var(--border-subtle);
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
 }
 
 .btn-icon:hover {
@@ -1038,7 +1038,7 @@ ul, ol { list-style: none; }
   border: 1px solid var(--border-subtle);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
   cursor: pointer;
 }
 
@@ -1076,7 +1076,7 @@ ul, ol { list-style: none; }
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
 }
 .btn-logout svg { flex-shrink: 0; }
 .btn-logout:hover {
@@ -1479,7 +1479,7 @@ ul, ol { list-style: none; }
   letter-spacing: 0.04em;
   text-transform: uppercase;
   border-radius: var(--radius-md);
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out);
   white-space: nowrap;
   user-select: none;
 }
@@ -2257,7 +2257,7 @@ ul, ol { list-style: none; }
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
   letter-spacing: 0.02em;
 }
 
@@ -2355,7 +2355,7 @@ ul, ol { list-style: none; }
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
   white-space: nowrap;
 }
 
@@ -2389,7 +2389,7 @@ ul, ol { list-style: none; }
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
   white-space: nowrap;
 }
 
@@ -2798,7 +2798,7 @@ ul, ol { list-style: none; }
   opacity: 0;
   pointer-events: none;
   transform: translateX(80px);
-  transition: all 0.4s var(--ease-spring);
+  transition: opacity 0.4s var(--ease-spring), transform 0.4s var(--ease-spring);
 }
 
 .toast.show {
@@ -2926,7 +2926,7 @@ ul, ol { list-style: none; }
     border-radius: var(--radius-md);
     cursor: pointer;
     padding: 0;
-    transition: all var(--duration-base) var(--ease-out);
+    transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out);
     flex-shrink: 0;
     gap: 0;
     margin-left: auto;
@@ -2947,7 +2947,7 @@ ul, ol { list-style: none; }
     height: 2px;
     background: var(--text-secondary);
     border-radius: 1px;
-    transition: all 0.3s var(--ease-out);
+    transition: transform 0.3s var(--ease-out), opacity 0.3s var(--ease-out);
     margin: 3px 0;
   }
 
@@ -3009,7 +3009,7 @@ ul, ol { list-style: none; }
     color: var(--text-primary);
     font-size: var(--font-sm);
     cursor: pointer;
-    transition: all var(--duration-base) var(--ease-out);
+    transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out);
     text-align: left;
     white-space: nowrap;
   }
@@ -3054,7 +3054,7 @@ ul, ol { list-style: none; }
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all var(--duration-base) var(--ease-out);
+    transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out);
     text-align: left;
     white-space: nowrap;
   }
@@ -3324,7 +3324,7 @@ ul, ol { list-style: none; }
   padding: 3px 10px;
   cursor: pointer;
   letter-spacing: 0.02em;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
 }
 .footer-version:hover {
   color: var(--primary);
@@ -3505,7 +3505,7 @@ ul, ol { list-style: none; }
   font-weight: 500;
   border: 1px solid var(--border-subtle);
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
 }
 .btn-secondary:hover { color: var(--text-primary); border-color: var(--text-muted); }
 
@@ -3783,7 +3783,7 @@ ul, ol { list-style: none; }
   font-size: var(--font-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
   flex: 1;
   justify-content: center;
 }
@@ -3841,7 +3841,7 @@ ul, ol { list-style: none; }
   color: var(--text-muted);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out);
 }
 
 .gordon-gear-btn:hover {
@@ -3883,7 +3883,7 @@ ul, ol { list-style: none; }
   font-size: var(--font-xs);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-base) var(--ease-out);
+  transition: color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
 }
 
 .gordon-base-opt:hover { color: var(--text-primary); border-color: var(--primary); }
@@ -4161,4 +4161,26 @@ ul, ol { list-style: none; }
   .gordon-select        { flex: 1 1 100%; }
   .gordon-rate-display  { margin-left: 0; font-size: var(--font-md); }
   .gordon-base-switch   { flex-direction: column; }
+}
+
+/* ── Acessibilidade: respeita quem pediu menos movimento no SO ──────────
+   Pausa só o movimento decorativo/contínuo (partículas de fundo e
+   animações via @keyframes, tipo shimmer/splash) pra quem ativou "reduzir
+   movimento" no sistema (iOS, Android, Windows, macOS). NÃO mexe nas
+   transições de hover/foco (card, botão, tab etc.) — essas são feedback
+   funcional da interface, curtas e sem risco de enjoo, e continuam
+   suaves normalmente mesmo com a preferência ativada. */
+@media (prefers-reduced-motion: reduce) {
+  .d-particle {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }

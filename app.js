@@ -365,7 +365,7 @@ function switchTab(tabName) {
     if (tabName === 'patrimonio') renderProventos();
     if (tabName === 'proventos') renderProventos();
     if (tabName === 'aporte') renderAporte();
-    if (tabName === 'ativos') renderAtivos();
+    if (tabName === 'ativos') { ensureAtivosDbLoaded(); renderAtivos(); }
     if (tabName === 'calc') { calcLoadState(); calcAll(); }
 }
 
@@ -399,7 +399,12 @@ function initDashboardParticles(containerId = 'dashboardParticles') {
     // (sem card no meio), então espalha por toda a largura dele.
     const fullSpread = containerId === 'authParticles' || containerId === 'introParticles';
 
-    for (let i = 0; i < 20; i++) {
+    // O dashboard fica aberto por muito mais tempo que intro/auth (que somem
+    // em segundos), então usamos menos partículas ali pra reduzir o custo de
+    // animação contínua ao longo da sessão inteira.
+    const particleCount = containerId === 'dashboardParticles' ? 12 : 20;
+
+    for (let i = 0; i < particleCount; i++) {
         const p = document.createElement('div');
         p.className = 'd-particle';
 
@@ -1355,6 +1360,28 @@ function deleteAporteMonth(key) {
 let currentAtivosFilter = 'all'; // 'all' | 'FII' | 'Ação'
 let editingAtivoId = null;
 
+// ===================== LAZY LOAD: BASE DE ATIVOS (B3) =====================
+// ativos-db.js (~440 tickers, ~50KB) só é usado aqui na aba Ativos pra
+// classificar um ticker digitado. Em vez de carregar sempre no início do
+// app (junto com Kraken/Proventos/Aporte, que não precisam disso), ele é
+// buscado sob demanda na primeira vez que a aba Ativos é aberta.
+let ativosDbPromise = null;
+function ensureAtivosDbLoaded() {
+    if (typeof classificarAtivo === 'function') return Promise.resolve();
+    if (ativosDbPromise) return ativosDbPromise;
+    ativosDbPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'ativos-db.min.js';
+        script.onload = () => resolve();
+        script.onerror = () => {
+            ativosDbPromise = null; // permite tentar de novo numa próxima chamada
+            reject(new Error('Falha ao carregar ativos-db.js'));
+        };
+        document.body.appendChild(script);
+    });
+    return ativosDbPromise;
+}
+
 function getAtivosData() {
     return loadData('byfinance_ativos', []);
 }
@@ -1393,6 +1420,13 @@ function handleAtivoTickerInput(input) {
         return;
     }
 
+    // Base ainda não chegou (raro: usuário digitou rápido demais) — espera
+    // carregar e refaz a chamada com o valor atual do campo.
+    if (typeof classificarAtivo !== 'function') {
+        ensureAtivosDbLoaded().then(() => handleAtivoTickerInput(input));
+        return;
+    }
+
     const result = classificarParaExibicao(ticker);
     preview.style.display = 'flex';
 
@@ -1422,6 +1456,11 @@ function handleAtivoTickerInput(input) {
 }
 
 function saveAtivo() {
+    if (typeof classificarAtivo !== 'function') {
+        ensureAtivosDbLoaded().then(saveAtivo);
+        return;
+    }
+
     const tickerInput = document.getElementById('ativoTicker');
     const ticker = tickerInput.value.trim().toUpperCase();
 

@@ -6,12 +6,12 @@
     <meta name="description" content="FastInvest — Controle inteligente de investimentos pessoais com patrimônio, proventos e aporte mensal.">
     <meta name="theme-color" content="#0A0A0A">
     <title>FastInvest — Controle de Investimentos</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.min.css">
 </head>
 <body>
     <!-- ========== INTRO / SPLASH ========== -->
@@ -1091,9 +1091,11 @@
 
     <!-- Hidden file input for import -->
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <script src="supabase-config.js"></script>
-    <script src="ativos-db.js"></script>
-    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="app.min.js" defer></script>
+    <!-- ativos-db.js (base de ~440 tickers da B3) não carrega mais aqui:
+         só é usado dentro da aba "Ativos" (classificação ao digitar um ticker),
+         então agora é carregado sob demanda por ensureAtivosDbLoaded() em app.js. -->
 </body>
 </html>

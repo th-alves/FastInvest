@@ -1,0 +1,236 @@
+{
+  "kraken": {
+    "dividendGoal": 30,
+    "categories": {
+      "K1": {
+        "applied": 7000,
+        "ideal": 12,
+        "atual": 20,
+        "assets": "PicPay 121% CDI"
+      },
+      "R": {
+        "applied": 3013.26,
+        "ideal": 25,
+        "atual": 60,
+        "assets": "HCTR11; GARE11; MXRF11; RECR11; RZTR11; WHGR11; GGRC11; PATL11"
+      },
+      "A": {
+        "applied": 3164.69,
+        "ideal": 25,
+        "atual": 20,
+        "assets": "BBAS3; BBSE3; PETR4; CMIG4; FIQE3; ITSA4; TAEE4; VALE3; BRBI11; KLBN4; SAPR4; ODPV3"
+      },
+      "K2": {
+        "applied": 252.27,
+        "ideal": 3,
+        "atual": 3,
+        "assets": "USDC"
+      },
+      "E": {
+        "applied": 165.5,
+        "ideal": 25,
+        "atual": 2,
+        "assets": "SPXB11"
+      },
+      "N": {
+        "applied": 0,
+        "ideal": 0,
+        "atual": 0,
+        "assets": ""
+      }
+    },
+    "patrimonioTotal": 9019.32
+  },
+  "proventos": {
+    "2026-05": {
+      "year": 2026,
+      "month": 4,
+      "valorAplicado": 8015.9,
+      "saldoBruto": 8784.47,
+      "dividendos": 39.92,
+      "dividendosFII": 29.32,
+      "valorFII": 2888.61
+    },
+    "2025-06": {
+      "year": 2025,
+      "month": 5,
+      "valorAplicado": 553.8,
+      "saldoBruto": 555.23,
+      "dividendos": 3.27,
+      "dividendosFII": 2.91,
+      "valorFII": 441.41
+    },
+    "2025-05": {
+      "year": 2025,
+      "month": 4,
+      "valorAplicado": 313,
+      "saldoBruto": 314.31,
+      "dividendos": 0,
+      "dividendosFII": 0,
+      "valorFII": 0
+    },
+    "2025-07": {
+      "year": 2025,
+      "month": 6,
+      "valorAplicado": 1017.53,
+      "saldoBruto": 1001.59,
+      "dividendos": 5.06,
+      "dividendosFII": 5.06,
+      "valorFII": 678.4
+    },
+    "2025-08": {
+      "year": 2025,
+      "month": 7,
+      "valorAplicado": 1756.52,
+      "saldoBruto": 1768.09,
+      "dividendos": 18.73,
+      "dividendosFII": 7.2,
+      "valorFII": 910.88
+    },
+    "2025-09": {
+      "year": 2025,
+      "month": 8,
+      "valorAplicado": 4325.84,
+      "saldoBruto": 4406.16,
+      "dividendos": 11.14,
+      "dividendosFII": 9.53,
+      "valorFII": 995.98
+    },
+    "2025-10": {
+      "year": 2025,
+      "month": 9,
+      "valorAplicado": 4948.05,
+      "saldoBruto": 5053.36,
+      "dividendos": 10.52,
+      "dividendosFII": 10.48,
+      "valorFII": 1133.43
+    },
+    "2025-11": {
+      "year": 2025,
+      "month": 10,
+      "valorAplicado": 5404.14,
+      "saldoBruto": 5638.19,
+      "dividendos": 20.46,
+      "dividendosFII": 12.04,
+      "valorFII": 1210.56
+    },
+    "2025-12": {
+      "year": 2025,
+      "month": 11,
+      "valorAplicado": 6124.82,
+      "saldoBruto": 6444.09,
+      "dividendos": 19.46,
+      "dividendosFII": 12.87,
+      "valorFII": 1774.44
+    },
+    "2026-01": {
+      "year": 2026,
+      "month": 0,
+      "valorAplicado": 6786.44,
+      "saldoBruto": 7501.36,
+      "dividendos": 20.68,
+      "dividendosFII": 18.81,
+      "valorFII": 1774.44
+    },
+    "2026-02": {
+      "year": 2026,
+      "month": 1,
+      "valorAplicado": 7316.07,
+      "saldoBruto": 8179.47,
+      "dividendos": 25.88,
+      "dividendosFII": 18.81,
+      "valorFII": 2304.07
+    },
+    "2026-03": {
+      "year": 2026,
+      "month": 2,
+      "valorAplicado": 7606.36,
+      "saldoBruto": 8644.05,
+      "dividendos": 73.72,
+      "dividendosFII": 22.75,
+      "valorFII": 2578.87
+    },
+    "2026-04": {
+      "year": 2026,
+      "month": 3,
+      "valorAplicado": 7858.2,
+      "saldoBruto": 8912.7,
+      "dividendos": 27.51,
+      "dividendosFII": 27.41,
+      "valorFII": 2730.91
+    }
+  },
+  "aportes": {
+    "2025-05": {
+      "year": 2025,
+      "month": 4,
+      "valor": 313
+    },
+    "2025-06": {
+      "year": 2025,
+      "month": 5,
+      "valor": 240.8
+    },
+    "2025-07": {
+      "year": 2025,
+      "month": 6,
+      "valor": 466.12
+    },
+    "2025-08": {
+      "year": 2025,
+      "month": 7,
+      "valor": 738.95
+    },
+    "2025-09": {
+      "year": 2025,
+      "month": 8,
+      "valor": 546
+    },
+    "2025-10": {
+      "year": 2025,
+      "month": 9,
+      "valor": 557.14
+    },
+    "2025-11": {
+      "year": 2025,
+      "month": 10,
+      "valor": 567.66
+    },
+    "2025-12": {
+      "year": 2025,
+      "month": 11,
+      "valor": 588.12
+    },
+    "2026-01": {
+      "year": 2026,
+      "month": 0,
+      "valor": 648.45
+    },
+    "2026-02": {
+      "year": 2026,
+      "month": 1,
+      "valor": 669.13
+    },
+    "2026-03": {
+      "year": 2026,
+      "month": 2,
+      "valor": 695.02
+    },
+    "2026-04": {
+      "year": 2026,
+      "month": 3,
+      "valor": 251.84
+    },
+    "2026-05": {
+      "year": 2026,
+      "month": 4,
+      "valor": 157.7
+    },
+    "2026-06": {
+      "year": 2026,
+      "month": 5,
+      "valor": 339.92
+    }
+  },
+  "exportDate": "2026-06-14T20:54:06.782Z"
+}

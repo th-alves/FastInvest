@@ -1,0 +1,11 @@
+{
+  "name": "byfinance-fastinvest",
+  "private": true,
+  "description": "Scripts de build do FastInvest (ByFinance) — só gera as versões .min de produção, o app continua rodando como HTML/CSS/JS puro.",
+  "scripts": {
+    "build": "npm run build:js && npm run build:ativos-db && npm run build:css",
+    "build:js": "npx terser app.js -c -m --comments false -o app.min.js",
+    "build:ativos-db": "npx terser ativos-db.js -c -m --comments false -o ativos-db.min.js",
+    "build:css": "npx clean-css-cli -O2 -o styles.min.css styles.css"
+  }
+}
