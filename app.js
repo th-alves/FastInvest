@@ -508,8 +508,9 @@ function renderMetas() {
     const divGoal = Number(krakenData.dividendGoal) || 0;
     const divWrap = document.getElementById('metasDividendBarWrap');
     if (divWrap) {
-        if (divGoal > 0 && keys.length > 0) {
-            const lastDiv = proventosData[keys[keys.length - 1]].dividendos || 0;
+        const divKeys = keys.filter(k => (proventosData[k].dividendos || 0) > 0);
+        if (divGoal > 0 && divKeys.length > 0) {
+            const lastDiv = proventosData[divKeys[divKeys.length - 1]].dividendos || 0;
             const pct = Math.min((lastDiv / divGoal) * 100, 100);
             divWrap.style.display = '';
             document.getElementById('metasDividendBarFill').style.width = pct.toFixed(1) + '%';
@@ -665,12 +666,21 @@ function saveProventosMonth() {
     showToast('Proventos do mês salvos com sucesso!');
 }
 
+// Retorna a chave do mês mais recente que realmente tem Saldo Bruto informado.
+// Meses que só têm proventos (sem patrimônio) são ignorados.
+function getLastPatrimonioKey(data) {
+    const keys = Object.keys(data).sort();
+    for (let i = keys.length - 1; i >= 0; i--) {
+        if ((data[keys[i]].saldoBruto || 0) > 0) return keys[i];
+    }
+    return null;
+}
+
 // Mantém krakenData.patrimonioTotal sempre igual ao Saldo Bruto do mês mais
 // recente com dado preenchido, evitando digitar o mesmo valor em dois lugares.
 function syncPatrimonioTotalFromProventos(proventosData) {
-    const keys = Object.keys(proventosData).sort();
-    if (keys.length === 0) return;
-    const lastKey = keys[keys.length - 1];
+    const lastKey = getLastPatrimonioKey(proventosData);
+    if (!lastKey) return;
     const lastSaldo = proventosData[lastKey].saldoBruto || 0;
     if (lastSaldo <= 0) return;
 
@@ -715,20 +725,26 @@ function updateProventosSummary(data) {
         totalProventos += (data[k].dividendos || 0);
     });
 
-    if (keys.length > 0) {
-        const last = data[keys[keys.length - 1]];
+    // Yield de FIIs: último mês que tem valor investido em FIIs informado
+    const fiiKeys = keys.filter(k => (data[k].valorFII || 0) > 0);
+    if (fiiKeys.length > 0) {
+        const lastFII = data[fiiKeys[fiiKeys.length - 1]];
+        lastYield = ((lastFII.dividendosFII || 0) / lastFII.valorFII) * 100;
+    }
+
+    // Patrimônio: último mês com Saldo Bruto informado — NÃO o último mês salvo,
+    // senão um mês que só tem proventos zera todos os cards de patrimônio.
+    const patKeys = keys.filter(k => (data[k].saldoBruto || 0) > 0);
+    if (patKeys.length > 0) {
+        const last = data[patKeys[patKeys.length - 1]];
         const va = last.valorAplicado || 0;
         const sb = last.saldoBruto || 0;
         lastSaldoBruto = sb;
-        const ganhoCapR = sb - va;
-        lastGanhoCapR = ganhoCapR;
+        lastGanhoCapR = sb - va;
         lastGanhoCapPct = va > 0 ? (lastGanhoCapR / va) * 100 : 0;
-        lastYield = (last.valorFII || 0) > 0 ? ((last.dividendosFII || 0) / (last.valorFII || 1)) * 100 : 0;
 
         // Performance: (Ganho de Capital + Total de Proventos) / Saldo Bruto
-        if (sb > 0) {
-            lastPerformance = ((ganhoCapR + totalProventos) / sb) * 100;
-        }
+        lastPerformance = ((lastGanhoCapR + totalProventos) / sb) * 100;
     }
 
     document.getElementById('totalProventos').textContent = formatCurrency(totalProventos);
@@ -742,18 +758,16 @@ function updateProventosSummary(data) {
     const heroDelta = document.getElementById('patrimonioTotalDelta');
     if (heroValue) heroValue.textContent = formatCurrency(lastSaldoBruto);
     if (heroDelta) {
-        if (keys.length > 1) {
-            const prevSaldo = data[keys[keys.length - 2]].saldoBruto || 0;
+        heroDelta.textContent = '';
+        heroDelta.className = 'patrimonio-hero-delta';
+        if (patKeys.length > 1) {
+            const prevSaldo = data[patKeys[patKeys.length - 2]].saldoBruto || 0;
             if (prevSaldo > 0) {
                 const diff = lastSaldoBruto - prevSaldo;
                 const diffPct = (diff / prevSaldo) * 100;
                 heroDelta.textContent = (diff >= 0 ? '+' : '') + formatCurrency(diff) + ' (' + (diffPct >= 0 ? '+' : '') + diffPct.toFixed(2).replace('.', ',') + '%) vs. mês anterior';
                 heroDelta.className = 'patrimonio-hero-delta ' + (diff >= 0 ? 'positive' : 'negative');
-            } else {
-                heroDelta.textContent = '';
             }
-        } else {
-            heroDelta.textContent = '';
         }
     }
 
@@ -900,19 +914,25 @@ function renderHistoricoMensalTable(data) {
     tbody.innerHTML = years.map(year => {
         const cells = MONTH_NAMES_SHORT.map((_, month) => {
             const entry = byYear[year][month];
-            if (!entry) return '<td class="year-grid-cell empty">—</td>';
+            // Mês sem Saldo Bruto (ex.: só proventos lançados) não é linha de
+            // patrimônio — mostra célula vazia em vez de R$ 0,00 / ↓100%.
+            if (!entry || !((entry.saldoBruto || 0) > 0)) return '<td class="year-grid-cell empty">—</td>';
 
             const va = entry.valorAplicado || 0;
             const sb = entry.saldoBruto || 0;
             const ganhoR = sb - va;
             const ganhoPct = va > 0 ? (ganhoR / va) * 100 : 0;
 
+            // Delta vs. o mês anterior que tenha patrimônio informado
             const idxGlobal = allKeysSorted.indexOf(entry.key);
             let deltaR = null, deltaPct = null;
-            if (idxGlobal > 0) {
-                const prevSB = data[allKeysSorted[idxGlobal - 1]]?.saldoBruto || 0;
-                deltaR = sb - prevSB;
-                deltaPct = prevSB > 0 ? (deltaR / prevSB) * 100 : null;
+            for (let i = idxGlobal - 1; i >= 0; i--) {
+                const prevSB = data[allKeysSorted[i]]?.saldoBruto || 0;
+                if (prevSB > 0) {
+                    deltaR = sb - prevSB;
+                    deltaPct = (deltaR / prevSB) * 100;
+                    break;
+                }
             }
             const deltaClass = deltaR === null ? '' : (deltaR >= 0 ? 'positive' : 'negative');
             const deltaLabel = deltaR === null ? '—' : (deltaR >= 0 ? '↑ ' : '↓ ') + formatPercent(Math.abs(deltaPct ?? 0));
@@ -955,7 +975,8 @@ function renderHistoricoProventosTable(data) {
     tbody.innerHTML = years.map(year => {
         const cells = MONTH_NAMES_SHORT.map((_, month) => {
             const entry = byYear[year][month];
-            if (!entry) return '<td class="year-grid-cell empty">—</td>';
+            // Mês que só tem patrimônio lançado não vira R$ 0,00 aqui
+            if (!entry || !((entry.dividendos || 0) > 0)) return '<td class="year-grid-cell empty">—</td>';
 
             const div = entry.dividendos || 0;
             const divFII = entry.dividendosFII || 0;
@@ -1945,7 +1966,9 @@ function updateGoalBar(totalProventos) {
 
     // Lógica: quantos dos últimos 6 meses bateram a meta?
     const data = getProventosData();
-    const keys = Object.keys(data).sort();
+    // Só meses com proventos lançados entram na régua — um mês em que só o
+    // patrimônio foi salvo não conta como "mês abaixo da meta".
+    const keys = Object.keys(data).sort().filter(k => (data[k].dividendos || 0) > 0);
     const recent = keys.slice(-6);
     const bateram = recent.filter(k => (data[k].dividendos || 0) >= goal).length;
     const total = recent.length;
@@ -1979,16 +2002,18 @@ function updateProjectionAndYoY(data) {
     // Projeção: média de aportes dos últimos 3 meses * meses restantes até meta patrimonial
     const krakenData = getKrakenData();
     const patrimonioAtual = krakenData.patrimonioTotal || 0;
-    const last = data[keys[keys.length - 1]];
     const recentKeys = keys.slice(-3);
-    const avgAporte = recentKeys.reduce((sum, k) => {
-        const aporteData = getAporteData();
-        return sum + (aporteData[k]?.valor || 0);
-    }, 0) / recentKeys.length;
-    const avgRendimento = recentKeys.reduce((sum, k) => {
-        const d = data[k];
-        return sum + ((d.saldoBruto - d.valorAplicado) / (d.valorAplicado || 1));
-    }, 0) / recentKeys.length;
+    const aporteData = getAporteData();
+    const avgAporte = recentKeys.reduce((sum, k) => sum + (aporteData[k]?.valor || 0), 0) / recentKeys.length;
+
+    // Só considera meses que têm patrimônio informado — meses com apenas
+    // proventos gerariam NaN e quebrariam a projeção.
+    const rendKeys = keys
+        .filter(k => (data[k].valorAplicado || 0) > 0 && (data[k].saldoBruto || 0) > 0)
+        .slice(-3);
+    const avgRendimento = rendKeys.length > 0
+        ? rendKeys.reduce((sum, k) => sum + ((data[k].saldoBruto - data[k].valorAplicado) / data[k].valorAplicado), 0) / rendKeys.length
+        : 0;
     const META = Number(krakenData.projecaoMeta) || 50000;
     let proj = patrimonioAtual;
     let meses = 0;
@@ -2003,16 +2028,16 @@ function updateProjectionAndYoY(data) {
         projSub.textContent = 'Registre mais aportes para projetar';
     }
 
-    // YoY: dividendos do mês atual vs mesmo mês do ano anterior
-    const cur = keys[keys.length - 1];
-    const curData = data[cur];
-    const yoyKey = monthKey(curData.year - 1, curData.month);
-    const yoyData = data[yoyKey];
+    // YoY: dividendos do último mês com proventos vs. mesmo mês do ano anterior
+    const divKeys = keys.filter(k => (data[k].dividendos || 0) > 0);
+    const curData = divKeys.length > 0 ? data[divKeys[divKeys.length - 1]] : null;
+    const yoyKey = curData ? monthKey(curData.year - 1, curData.month) : null;
+    const yoyData = yoyKey ? data[yoyKey] : null;
     const yoyEl = document.getElementById('yoyDividendos');
     const yoyPct = document.getElementById('yoyDividendosPct');
-    if (yoyData) {
-        const diff = curData.dividendos - yoyData.dividendos;
-        const pct = yoyData.dividendos > 0 ? (diff / yoyData.dividendos) * 100 : 0;
+    if (curData && yoyData && (yoyData.dividendos || 0) > 0) {
+        const diff = (curData.dividendos || 0) - (yoyData.dividendos || 0);
+        const pct = (diff / yoyData.dividendos) * 100;
         yoyEl.textContent = formatCurrency(curData.dividendos) + ' vs ' + formatCurrency(yoyData.dividendos);
         yoyEl.className = 'stat-value ' + (diff >= 0 ? 'positive' : 'negative');
         yoyPct.textContent = (diff >= 0 ? '+' : '') + pct.toFixed(1) + '% em relação a ' + monthLabelShort(yoyData.year, yoyData.month);
