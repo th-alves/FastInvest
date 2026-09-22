@@ -346,6 +346,9 @@ function parseCurrencyInput(str) {
 
 function handleCurrencyInput(input) {
     let raw = input.value.replace(/[^\d]/g, '');
+    raw = raw.replace(/^0+/, ''); // remove zeros à esquerda supérfluos
+    // Sem isso, "000" (equivalente a R$ 0,00) nunca chegava a ficar vazio:
+    // cada backspace recompunha "0,00" de novo, travando o campo em loop.
     if (raw === '') { input.value = ''; return; }
     let num = parseInt(raw, 10) / 100;
     input.value = num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -477,7 +480,12 @@ function saveKrakenData() {
     // patrimonioTotal não tem campo próprio no formulário — ele é gerido
     // exclusivamente por syncPatrimonioTotalFromProventos() a partir do Saldo
     // Bruto informado em Proventos, então preservamos o valor já salvo aqui.
-    data.projecaoMeta = parseCurrencyInput(document.getElementById('projecaoMeta').value) || 50000;
+    // Guarda o valor real digitado (0 se vazio) — NÃO aplica o padrão de
+    // 50.000 aqui. Se aplicássemos, o campo reaparecia sozinho com
+    // "50.000,00" assim que ficasse vazio, porque é isso que teria sido
+    // salvo e renderMetas() logo em seguida repõe o valor salvo no input.
+    // O padrão de 50.000 é usado só no cálculo da projeção (updateProjectionAndYoY).
+    data.projecaoMeta = parseCurrencyInput(document.getElementById('projecaoMeta').value);
     saveData('byfinance_kraken', data);
 }
 
@@ -2097,7 +2105,10 @@ function parseBR(str) {
 function maskCurrencyInput(el, decimals = 2) {
     let digits = el.value.replace(/\D/g, '');
     if (!digits) { el.value = ''; return; }
-    digits = digits.replace(/^0+(?=\d)/, '');       // remove zeros à esquerda supérfluos
+    digits = digits.replace(/^0+/, '');              // remove TODOS os zeros à esquerda
+    // Se sobrarem só zeros (valor = R$0,00), esvazia de vez — senão o campo
+    // fica preso em "0,00" e o backspace parece não fazer nada (loop).
+    if (!digits) { el.value = ''; return; }
     while (digits.length <= decimals) digits = '0' + digits; // garante casas decimais mínimas
     const intPart = digits
         .slice(0, digits.length - decimals)
